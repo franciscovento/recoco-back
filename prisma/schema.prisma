@@ -10,3 +10,136 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Rol {
+  normal
+  manager
+  super_user
+}
+
+enum UserStatus {
+  active
+  deleted
+  blocked
+}
+
+enum Status {
+  active
+  draft
+  reported
+  deleted
+}
+
+enum CommentStatus {
+  approved
+  onReview
+  pending
+  deleted
+  spam
+  rejected
+}
+
+model Country {
+  id Int @id @default(autoincrement())
+  name String
+}
+
+model User {
+  id String @id @unique @default(uuid())
+  email String @unique
+  password String
+  username String @unique
+  rol Rol @default(normal)
+  status UserStatus @default(active)
+  is_verified Boolean @default(false)
+  university_id String?
+  degree_id String? 
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+}
+
+model University {
+  id String @id @unique @default(uuid())
+  name String 
+  country_id String
+  website String?
+  phone String?
+  status Status @default(draft)
+  created_by String
+}
+
+model Faculty {
+  id String @id @unique @default(uuid())
+  name String
+  status Status @default(draft)
+  university_id String
+  created_by String
+}
+
+model Degree {
+  id String @id @unique @default(uuid())
+  name String
+  description String?
+  duration Decimal?
+  status Status @default(draft)
+  faculty_id String
+  created_by String
+  degreeCourses DegreeCourse[]
+}
+
+ model Teacher {
+  id String @id @unique @default(uuid())
+  name String
+  last_name String
+  score Int?
+  status Status
+  created_by String
+  courseTeacher CourseTeacher[]
+ }
+
+ model Course {
+  id String @id @unique @default(uuid())
+  name String
+  description String? 
+  short_name String
+  course_code String
+  status Status
+  created_by String
+  degreeCourses DegreeCourse[]
+  
+  courseTeacher CourseTeacher[]
+ }
+
+ model Comment { 
+  id String  @id @unique @default(uuid())
+  comment String
+  likes Int
+  dislikes Int
+  status CommentStatus @default(approved)
+  course_id String
+  teacher_id String
+  created_by String
+ }
+
+ model DegreeCourse {
+  degree_id String 
+  course_id String 
+
+  degree  Degree @relation(fields: [degree_id], references: [id])
+  course  Course @relation(fields: [course_id], references: [id])
+
+  @@id([degree_id, course_id])
+ }
+
+ model CourseTeacher {
+  course_id String 
+  teacher_id String 
+  quality Int
+  difficulty Int
+  totalComments Int 
+  hours_per_week Int
+  status Status
+
+  course Course @relation(fields: [course_id], references: [id])
+  teacher Teacher @relation(fields: [teacher_id], references: [id])
+  @@id([course_id, teacher_id])
+ }
