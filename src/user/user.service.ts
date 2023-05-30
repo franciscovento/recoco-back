@@ -3,24 +3,21 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserRequest } from 'src/common/interfaces/userRequest.interface';
 
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createUserDto: CreateUserDto) {
-    const { password, ...restData } = createUserDto;
-    const hashedPassword = await bcrypt.hash(password, 10);
-    return this.prisma.user.create({
-      data: { ...restData, password: hashedPassword },
-    });
+  async findAll(user: UserRequest) {
+    const users = await this.prisma.user.findMany();
+    return {
+      results: users,
+      asked_by: user.username,
+    };
   }
 
-  findAll() {
-    return this.prisma.user.findMany();
-  }
-
-  findOne(id: number) {
+  findOne(id: string) {
     return `This action returns a #${id} user`;
   }
 
