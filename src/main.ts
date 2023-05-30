@@ -8,6 +8,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api/v1');
   app.useGlobalPipes(new ValidationPipe());
   const config = new DocumentBuilder()
+    .addBearerAuth()
     .setTitle('Recoco')
     .setDescription('Recoco API')
     .setVersion('0.1')
