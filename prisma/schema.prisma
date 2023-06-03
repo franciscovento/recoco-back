@@ -41,6 +41,7 @@ enum CommentStatus {
 model Country {
   id Int @id @default(autoincrement())
   name String
+  universities University[]
 }
 
 model User {
@@ -60,11 +61,16 @@ model User {
 model University {
   id String @id @unique @default(uuid())
   name String 
-  country_id String
+  country_id Int
   website String?
   phone String?
   status Status @default(draft)
   created_by String
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  country Country @relation(fields: [country_id], references: [id])
+
 }
 
 model Faculty {
@@ -73,6 +79,8 @@ model Faculty {
   status Status @default(draft)
   university_id String
   created_by String
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
 }
 
 model Degree {
@@ -84,6 +92,8 @@ model Degree {
   faculty_id String
   created_by String
   degreeCourses DegreeCourse[]
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
 }
 
  model Teacher {
@@ -94,6 +104,8 @@ model Degree {
   status Status
   created_by String
   courseTeacher CourseTeacher[]
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
  }
 
  model Course {
@@ -104,6 +116,9 @@ model Degree {
   course_code String
   status Status
   created_by String
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
   degreeCourses DegreeCourse[]
   
   courseTeacher CourseTeacher[]
@@ -118,12 +133,15 @@ model Degree {
   course_id String
   teacher_id String
   created_by String
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
  }
 
  model DegreeCourse {
   degree_id String 
   course_id String 
-
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
   degree  Degree @relation(fields: [degree_id], references: [id])
   course  Course @relation(fields: [course_id], references: [id])
 
@@ -138,7 +156,8 @@ model Degree {
   totalComments Int 
   hours_per_week Int
   status Status
-
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
   course Course @relation(fields: [course_id], references: [id])
   teacher Teacher @relation(fields: [teacher_id], references: [id])
   @@id([course_id, teacher_id])
