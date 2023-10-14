@@ -64,23 +64,24 @@ model University {
   country_id Int
   website String?
   phone String?
-  status Status @default(draft)
+  status Status? @default(active)
   created_by String
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
 
   country Country @relation(fields: [country_id], references: [id])
-
+  faculties Faculty[]
 }
 
 model Faculty {
   id String @id @unique @default(uuid())
   name String
-  status Status @default(draft)
+  status Status? @default(active)
   university_id String
   created_by String
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
+  university University @relation(fields: [university_id], references: [id])
 }
 
 model Degree {
@@ -88,7 +89,7 @@ model Degree {
   name String
   description String?
   duration Decimal?
-  status Status @default(draft)
+  status Status? @default(active)
   faculty_id String
   created_by String
   degreeCourses DegreeCourse[]
@@ -101,7 +102,7 @@ model Degree {
   name String
   last_name String
   score Int?
-  status Status
+  status Status? @default(active)
   created_by String
   courseTeacher CourseTeacher[]
   created_at DateTime  @default(now())
@@ -113,8 +114,8 @@ model Degree {
   name String
   description String? 
   short_name String
-  course_code String
-  status Status
+  course_code String?
+  status Status? @default(active)
   created_by String
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
@@ -155,7 +156,7 @@ model Degree {
   difficulty Int
   totalComments Int 
   hours_per_week Int
-  status Status
+  status Status @default(draft)
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
   course Course @relation(fields: [course_id], references: [id])

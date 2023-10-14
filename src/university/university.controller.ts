@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { UniversityService } from './university.service';
 import { CreateUniversityDto } from './dto/create-university.dto';
@@ -35,22 +36,31 @@ export class UniversityController {
   findAll() {
     return this.universityService.findAll();
   }
+  @Get('by-country/:country_id')
+  findAllByCountry(@Param('country_id', ParseIntPipe) country_id: string) {
+    return this.universityService.findAllByCountry(+country_id);
+  }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.universityService.findOne(+id);
+    return this.universityService.findOne(id);
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   update(
     @Param('id') id: string,
     @Body() updateUniversityDto: UpdateUniversityDto,
+    @User() user: UserRequest,
   ) {
-    return this.universityService.update(+id, updateUniversityDto);
+    return this.universityService.update(id, updateUniversityDto, user);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.universityService.remove(+id);
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  remove(@Param('id') id: string, @User() user: UserRequest) {
+    return this.universityService.remove(id, user);
   }
 }
