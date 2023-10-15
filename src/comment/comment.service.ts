@@ -3,7 +3,6 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { UserRequest } from 'src/common/interfaces/userRequest.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { User } from '@prisma/client';
 
 @Injectable()
 export class CommentService {
@@ -19,12 +18,20 @@ export class CommentService {
   }
 
   async update(
-    id: string,
+    teacher_id: string,
+    course_id: string,
     updateCommentDto: UpdateCommentDto,
     user: UserRequest,
   ) {
     try {
-      const comment = await this.prisma.comment.findUnique({ where: { id } });
+      const comment = await this.prisma.comment.findUnique({
+        where: {
+          course_id_teacher_id: {
+            course_id,
+            teacher_id,
+          },
+        },
+      });
       if (!comment) {
         throw new NotFoundException('Comment not found');
       }
@@ -35,7 +42,12 @@ export class CommentService {
       }
 
       return await this.prisma.comment.update({
-        where: { id },
+        where: {
+          course_id_teacher_id: {
+            course_id,
+            teacher_id,
+          },
+        },
         data: {
           comment: updateCommentDto.comment,
         },
@@ -45,9 +57,16 @@ export class CommentService {
     }
   }
 
-  async remove(id: string, user: UserRequest) {
+  async remove(teacher_id: string, course_id: string, user: UserRequest) {
     try {
-      const comment = await this.prisma.comment.findUnique({ where: { id } });
+      const comment = await this.prisma.comment.findUnique({
+        where: {
+          course_id_teacher_id: {
+            course_id,
+            teacher_id,
+          },
+        },
+      });
       if (!comment) {
         throw new NotFoundException('Comment not found');
       }
@@ -58,7 +77,12 @@ export class CommentService {
       }
 
       return await this.prisma.comment.delete({
-        where: { id },
+        where: {
+          course_id_teacher_id: {
+            course_id,
+            teacher_id,
+          },
+        },
       });
     } catch (error) {
       throw error;

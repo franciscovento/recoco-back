@@ -11,6 +11,17 @@ import { CourseModule } from './course/course.module';
 import { CommentModule } from './comment/comment.module';
 
 @Module({
-  imports: [PrismaModule, UserModule, AuthModule, UniversityModule, CountryModule, FacultyModule, TeacherModule, DegreeModule, CourseModule, CommentModule],
+  imports: [
+    PrismaModule,
+    UserModule,
+    AuthModule,
+    UniversityModule,
+    CountryModule,
+    FacultyModule,
+    TeacherModule,
+    DegreeModule,
+    CourseModule,
+    CommentModule,
+  ],
 })
 export class AppModule {}

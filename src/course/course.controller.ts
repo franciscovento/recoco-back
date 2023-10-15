@@ -40,7 +40,7 @@ export class CourseController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe, ValidationPipe) id: string) {
     return this.courseService.findOne(id);
   }
 
@@ -48,7 +48,7 @@ export class CourseController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   update(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe, ValidationPipe) id: string,
     @Body() updateCourseDto: UpdateCourseDto,
     @User() user: UserRequest,
   ) {
@@ -58,7 +58,54 @@ export class CourseController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  remove(@Param('id') id: string, @User() user: UserRequest) {
+  remove(
+    @Param('id', ParseUUIDPipe, ValidationPipe) id: string,
+    @User() user: UserRequest,
+  ) {
     return this.courseService.remove(id, user);
+  }
+
+  @Post(':id/assign-degree/:degree_id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  assignDegree(
+    @Param('id', ParseUUIDPipe, ValidationPipe) id: string,
+    @Param('degree_id', ParseUUIDPipe, ValidationPipe) degree_id: string,
+    @User() user: UserRequest,
+  ) {
+    return this.courseService.assignDegree(id, degree_id, user);
+  }
+
+  @Delete(':id/assign-degree/:degree_id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  deleteCourseDegreeDegree(
+    @Param('id', ParseUUIDPipe, ValidationPipe) id: string,
+    @Param('degree_id', ParseUUIDPipe, ValidationPipe) degree_id: string,
+    @User() user: UserRequest,
+  ) {
+    return this.courseService.deleteDegree(id, degree_id, user);
+  }
+
+  @Post(':id/assign-teacher/:degree_id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  assignTeacher(
+    @Param('id', ParseUUIDPipe, ValidationPipe) id: string,
+    @Param('degree_id', ParseUUIDPipe, ValidationPipe) degree_id: string,
+    @User() user: UserRequest,
+  ) {
+    return this.courseService.assignTeacher(id, degree_id, user);
+  }
+
+  @Delete(':id/assign-teacher/:degree_id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  deleteTeacher(
+    @Param('id', ParseUUIDPipe, ValidationPipe) id: string,
+    @Param('degree_id', ParseUUIDPipe, ValidationPipe) degree_id: string,
+    @User() user: UserRequest,
+  ) {
+    return this.courseService.deleteTeacher(id, degree_id, user);
   }
 }

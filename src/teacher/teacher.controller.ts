@@ -58,4 +58,33 @@ export class TeacherController {
   remove(@Param('id') id: string, @User() user: UserRequest) {
     return this.teacherService.remove(id, user);
   }
+
+  @Get(':id/courses')
+  findAllCourses(@Param('id') id: string) {
+    return this.teacherService.findAllCourses(id);
+  }
+
+  @Get(':id/courses/:course_id')
+  findCourse(@Param('id') id: string, @Param('course_id') course_id: string) {
+    return this.teacherService.findCourse(id, course_id);
+  }
+
+  @Get(':id/courses/:course_id/comments')
+  findAllComments(
+    @Param('id') id: string,
+    @Param('course_id') course_id: string,
+  ) {
+    return this.teacherService.findAllComments(id, course_id);
+  }
+
+  @Post(':id/assign-course/:course_id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  assignCourse(
+    @Param('id') id: string,
+    @Param('course_id') course_id: string,
+    @User() user: UserRequest,
+  ) {
+    return this.teacherService.assignCourse(id, course_id, user);
+  }
 }

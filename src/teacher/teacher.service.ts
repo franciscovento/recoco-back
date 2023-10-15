@@ -79,4 +79,111 @@ export class TeacherService {
       throw error;
     }
   }
+
+  async findAllComments(id: string, course_id: string) {
+    try {
+      return await this.prisma.comment.findMany({
+        where: {
+          teacher_id: id,
+          course_id,
+        },
+
+        include: {
+          _count: {
+            select: {
+              commentDislikes: true,
+              commentLikes: true,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findAllCourses(teacher_id: string) {
+    try {
+      return await this.prisma.courseTeacher.findMany({
+        where: {
+          teacher_id,
+        },
+        include: {
+          course: true,
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findCourse(teacher_id: string, course_id: string) {
+    try {
+      const course = await this.prisma.courseTeacher.findUnique({
+        where: {
+          course_id_teacher_id: {
+            course_id,
+            teacher_id,
+          },
+        },
+        include: {
+          course: true,
+        },
+      });
+      if (!course) {
+        throw new NotFoundException('Course not found');
+      }
+      return course;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async assignCourse(teacher_id: string, course_id: string, user: UserRequest) {
+    try {
+      return await this.prisma.courseTeacher.create({
+        data: {
+          teacher_id,
+          course_id,
+          created_by: user.sub,
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+  async deleteCourse(teacher_id: string, course_id: string, user: UserRequest) {
+    try {
+      const courseTeacher = await this.prisma.courseTeacher.findUnique({
+        where: {
+          course_id_teacher_id: {
+            course_id,
+            teacher_id,
+          },
+        },
+      });
+
+      if (!courseTeacher) {
+        throw new NotFoundException('Course not found');
+      }
+      if (courseTeacher.created_by !== user.sub) {
+        throw new NotFoundException(
+          'You are not allowed to delete this assignment',
+        );
+      }
+      return await this.prisma.courseTeacher.update({
+        data: {
+          status: 'deleted',
+        },
+        where: {
+          course_id_teacher_id: {
+            course_id,
+            teacher_id,
+          },
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
 }

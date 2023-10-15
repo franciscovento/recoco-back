@@ -28,17 +28,27 @@ export class CommentController {
     return this.commentService.create(createCommentDto, user);
   }
 
-  @Patch(':id')
+  @Patch(':teacher_id/:course_id')
   update(
-    @Param('id') id: string,
+    @Param('teacher_id') teacher_id: string,
+    @Param('course_id') course_id: string,
     @Body() updateCommentDto: UpdateCommentDto,
     @User() user: UserRequest,
   ) {
-    return this.commentService.update(id, updateCommentDto, user);
+    return this.commentService.update(
+      teacher_id,
+      course_id,
+      updateCommentDto,
+      user,
+    );
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string, @User() user: UserRequest) {
-    return this.commentService.remove(id, user);
+  remove(
+    @Param('teacher_id') teacher_id: string,
+    @Param('course_id') course_id: string,
+    @User() user: UserRequest,
+  ) {
+    return this.commentService.remove(teacher_id, course_id, user);
   }
 }
