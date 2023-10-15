@@ -8,8 +8,9 @@ import { FacultyModule } from './faculty/faculty.module';
 import { TeacherModule } from './teacher/teacher.module';
 import { DegreeModule } from './degree/degree.module';
 import { CourseModule } from './course/course.module';
+import { CommentModule } from './comment/comment.module';
 
 @Module({
-  imports: [PrismaModule, UserModule, AuthModule, UniversityModule, CountryModule, FacultyModule, TeacherModule, DegreeModule, CourseModule],
+  imports: [PrismaModule, UserModule, AuthModule, UniversityModule, CountryModule, FacultyModule, TeacherModule, DegreeModule, CourseModule, CommentModule],
 })
 export class AppModule {}
