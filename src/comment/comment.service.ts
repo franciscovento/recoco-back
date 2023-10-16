@@ -26,9 +26,10 @@ export class CommentService {
     try {
       const comment = await this.prisma.comment.findUnique({
         where: {
-          course_id_teacher_id: {
+          course_id_teacher_id_created_by: {
             course_id,
             teacher_id,
+            created_by: user.sub,
           },
         },
       });
@@ -43,9 +44,10 @@ export class CommentService {
 
       return await this.prisma.comment.update({
         where: {
-          course_id_teacher_id: {
+          course_id_teacher_id_created_by: {
             course_id,
             teacher_id,
+            created_by: user.sub,
           },
         },
         data: {
@@ -61,9 +63,10 @@ export class CommentService {
     try {
       const comment = await this.prisma.comment.findUnique({
         where: {
-          course_id_teacher_id: {
+          course_id_teacher_id_created_by: {
             course_id,
             teacher_id,
+            created_by: user.sub,
           },
         },
       });
@@ -78,9 +81,10 @@ export class CommentService {
 
       return await this.prisma.comment.delete({
         where: {
-          course_id_teacher_id: {
+          course_id_teacher_id_created_by: {
             course_id,
             teacher_id,
+            created_by: user.sub,
           },
         },
       });

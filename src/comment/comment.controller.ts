@@ -24,7 +24,10 @@ export class CommentController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  create(@Body() createCommentDto: CreateCommentDto, user: UserRequest) {
+  create(
+    @Body() createCommentDto: CreateCommentDto,
+    @User() user: UserRequest,
+  ) {
     return this.commentService.create(createCommentDto, user);
   }
 

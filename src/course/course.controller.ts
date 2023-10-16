@@ -87,25 +87,25 @@ export class CourseController {
     return this.courseService.deleteDegree(id, degree_id, user);
   }
 
-  @Post(':id/assign-teacher/:degree_id')
+  @Post(':id/assign-teacher/:teacher_id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   assignTeacher(
     @Param('id', ParseUUIDPipe, ValidationPipe) id: string,
-    @Param('degree_id', ParseUUIDPipe, ValidationPipe) degree_id: string,
+    @Param('teacher_id', ParseUUIDPipe, ValidationPipe) teacher_id: string,
     @User() user: UserRequest,
   ) {
-    return this.courseService.assignTeacher(id, degree_id, user);
+    return this.courseService.assignTeacher(id, teacher_id, user);
   }
 
-  @Delete(':id/assign-teacher/:degree_id')
+  @Delete(':id/assign-teacher/:teacher_id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   deleteTeacher(
     @Param('id', ParseUUIDPipe, ValidationPipe) id: string,
-    @Param('degree_id', ParseUUIDPipe, ValidationPipe) degree_id: string,
+    @Param('teacher_id', ParseUUIDPipe, ValidationPipe) teacher_id: string,
     @User() user: UserRequest,
   ) {
-    return this.courseService.deleteTeacher(id, degree_id, user);
+    return this.courseService.deleteTeacher(id, teacher_id, user);
   }
 }

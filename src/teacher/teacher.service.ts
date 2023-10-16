@@ -128,6 +128,11 @@ export class TeacherService {
         },
         include: {
           course: true,
+          _count: {
+            select: {
+              comments: true,
+            },
+          },
         },
       });
       if (!course) {
