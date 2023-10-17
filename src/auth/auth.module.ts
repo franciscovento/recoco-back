@@ -12,7 +12,7 @@ import { jwtConstants } from './jwt.constants';
   imports: [
     PrismaModule,
     JwtModule.register({
-      secret: jwtConstants.secret,
+      secret: process.env.JWT_SECRET_KEY,
       signOptions: { expiresIn: '7d' },
     }),
   ],
