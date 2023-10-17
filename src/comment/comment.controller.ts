@@ -20,7 +20,7 @@ import { User } from 'src/common/decorators/user.decorator';
 @ApiTags('comment')
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
-
+  // TODO: CHECK TRIGGERS AND COMMENTS CONTROLLERS
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -31,7 +31,9 @@ export class CommentController {
     return this.commentService.create(createCommentDto, user);
   }
 
-  @Patch(':teacher_id/:course_id')
+  @Patch()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   update(
     @Param('teacher_id') teacher_id: string,
     @Param('course_id') course_id: string,
@@ -47,11 +49,37 @@ export class CommentController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   remove(
     @Param('teacher_id') teacher_id: string,
     @Param('course_id') course_id: string,
     @User() user: UserRequest,
   ) {
     return this.commentService.remove(teacher_id, course_id, user);
+  }
+
+  @Post(':teacher_id/:course_id/:user_id/like')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  likesComment(
+    @Param('teacher_id') teacher_id: string,
+    @Param('course_id') course_id: string,
+    @Param('user_id') user_id: string,
+    @User() user: UserRequest,
+  ) {
+    this.commentService.likeComment(teacher_id, course_id, user_id, user);
+  }
+
+  @Post(':teacher_id/:course_id/:user_id/dislike')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  dislikesComment(
+    @Param('teacher_id') teacher_id: string,
+    @Param('course_id') course_id: string,
+    @Param('user_id') user_id: string,
+    @User() user: UserRequest,
+  ) {
+    this.commentService.dislikeComment(teacher_id, course_id, user_id, user);
   }
 }

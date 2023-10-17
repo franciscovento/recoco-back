@@ -87,15 +87,6 @@ export class TeacherService {
           teacher_id: id,
           course_id,
         },
-
-        include: {
-          _count: {
-            select: {
-              commentDislikes: true,
-              commentLikes: true,
-            },
-          },
-        },
       });
     } catch (error) {
       throw error;
