@@ -41,7 +41,7 @@ enum CommentStatus {
 
 model Country {
   id Int @id @default(autoincrement())
-  name String
+  name String @unique
   universities University[]
 }
 
@@ -71,7 +71,7 @@ model User {
 
 model University {
   id String @id @unique @default(uuid())
-  name String 
+  name String @unique
   country_id Int
   website String?
   phone String?
@@ -83,11 +83,12 @@ model University {
   user User @relation(fields: [created_by], references: [id])
   country Country @relation(fields: [country_id], references: [id])
   faculties Faculty[]
+
 }
 
 model Faculty {
   id String @id @unique @default(uuid())
-  name String
+  name String 
   status Status? @default(active)
   university_id String
   created_by String
@@ -97,6 +98,7 @@ model Faculty {
   user User @relation(fields: [created_by], references: [id])
   degrees Degree[]
   course Course[]
+
 }
 
 model Degree {
@@ -112,6 +114,7 @@ model Degree {
   updated_at DateTime  @updatedAt
   user User @relation(fields: [created_by], references: [id])
   faculty Faculty @relation(fields: [faculty_id], references: [id])
+
 }
 
  model Teacher {
@@ -143,6 +146,7 @@ model Degree {
   degreeCourses DegreeCourse[]
   courseTeacher CourseTeacher[]
   user User @relation(fields: [created_by], references: [id])
+
  }
 
  model Comment { 

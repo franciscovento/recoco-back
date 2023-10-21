@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { CreateFacultyDto } from './dto/create-faculty.dto';
 import { UpdateFacultyDto } from './dto/update-faculty.dto';
@@ -14,9 +15,22 @@ export class FacultyService {
 
   async create(createFacultyDto: CreateFacultyDto, user: UserRequest) {
     try {
+      const normalizedName = createFacultyDto.name.toLowerCase().trim();
+      const facultyExist = await this.prisma.faculty.findFirst({
+        where: {
+          university_id: createFacultyDto.university_id,
+          name: normalizedName,
+        },
+      });
+      if (facultyExist) {
+        throw new UnprocessableEntityException(
+          'This faculty already exist in db',
+        );
+      }
       return await this.prisma.faculty.create({
         data: {
           ...createFacultyDto,
+          name: normalizedName,
           created_by: user.sub,
         },
       });

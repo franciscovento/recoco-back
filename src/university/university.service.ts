@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { CreateUniversityDto } from './dto/create-university.dto';
 import { UpdateUniversityDto } from './dto/update-university.dto';
@@ -15,9 +16,23 @@ export class UniversityService {
 
   async create(createUniversityDto: CreateUniversityDto, user: UserRequest) {
     try {
+      const normalizedName = createUniversityDto.name.toLowerCase().trim();
+      const universityExist = await this.prisma.university.findFirst({
+        where: {
+          country_id: createUniversityDto.country_id,
+          name: normalizedName,
+        },
+      });
+
+      if (universityExist) {
+        throw new UnprocessableEntityException(
+          'This university already exist in db',
+        );
+      }
       return await this.prisma.university.create({
         data: {
           ...createUniversityDto,
+          name: normalizedName,
           created_by: user.sub,
         },
       });
