@@ -29,6 +29,7 @@ export class UniversityService {
           'This university already exist in db',
         );
       }
+
       return await this.prisma.university.create({
         data: {
           ...createUniversityDto,
@@ -37,6 +38,7 @@ export class UniversityService {
         },
       });
     } catch (error) {
+      console.log(error);
       if (error.code === 'P2003') {
         throw new BadRequestException('This country does not exist in db');
       }
@@ -49,6 +51,9 @@ export class UniversityService {
       return await this.prisma.university.findMany({
         where: {
           status: 'active',
+        },
+        include: {
+          country: true,
         },
       });
     } catch (error) {
