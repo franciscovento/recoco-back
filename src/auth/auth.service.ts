@@ -9,6 +9,8 @@ import { SignupDto } from './dto/signup.dto';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
+import { UserRequest } from 'src/common/interfaces/userRequest.interface';
+import { ChanguePasswordDto } from './dto/changue-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -57,7 +59,54 @@ export class AuthService {
     return data;
   }
 
-  me() {
-    return `this action return user me`;
+  async changuePassword(
+    changuePasswordDto: ChanguePasswordDto,
+    user: UserRequest,
+  ) {
+    try {
+      const { old_password, new_password } = changuePasswordDto;
+      const findUser = await this.prisma.user.findUnique({
+        where: { id: user.sub },
+      });
+      if (!findUser) {
+        throw new NotFoundException('USER_NOT_FOUND');
+      }
+
+      const checkPassword = await bcrypt.compare(
+        old_password,
+        findUser.password,
+      );
+      if (!checkPassword) {
+        throw new UnauthorizedException('Password not valid');
+      }
+
+      const hashedPassword = await bcrypt.hash(new_password, 10);
+
+      await this.prisma.user.update({
+        data: {
+          password: hashedPassword,
+        },
+        where: {
+          id: user.sub,
+        },
+      });
+      return {
+        message: 'Password changed',
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async me(user: UserRequest) {
+    try {
+      return await this.prisma.user.findUnique({
+        where: {
+          id: user.sub,
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 }

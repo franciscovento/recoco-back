@@ -61,6 +61,8 @@ export class DegreeController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   update(
     @Param('id', ParseUUIDPipe, ValidationPipe) id: string,
     @Body() updateDegreeDto: UpdateDegreeDto,
@@ -70,6 +72,8 @@ export class DegreeController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   remove(
     @Param('id', ParseUUIDPipe, ValidationPipe) id: string,
     @User() user: UserRequest,
