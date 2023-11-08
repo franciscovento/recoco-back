@@ -51,6 +51,21 @@ export class DegreeService {
     }
   }
 
+  async findAllCourses(id: string) {
+    try {
+      return await this.prisma.degreeCourse.findMany({
+        where: {
+          degree_id: id,
+        },
+        include: {
+          course: true,
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async findAllByFaculty(facultyId: string) {
     try {
       return await this.prisma.degree.findMany({

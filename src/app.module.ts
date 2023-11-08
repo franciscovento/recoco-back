@@ -10,6 +10,7 @@ import { TeacherModule } from './teacher/teacher.module';
 import { DegreeModule } from './degree/degree.module';
 import { CourseModule } from './course/course.module';
 import { CommentModule } from './comment/comment.module';
+import { TeacherClassModule } from './teacher-class/teacher-class.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { CommentModule } from './comment/comment.module';
     DegreeModule,
     CourseModule,
     CommentModule,
+    TeacherClassModule,
   ],
 })
 export class AppModule {}

@@ -31,9 +31,17 @@ export class DegreeController {
     return this.degreeService.create(createDegreeDto, user);
   }
 
-  @Get()
-  findAll() {
-    return this.degreeService.findAll();
+  // @Get()
+  // findAll() {
+  //   return this.degreeService.findAll();
+  // }
+  @Get(':id/courses')
+  @ApiOperation({
+    summary: 'Get all courses from a degree',
+    description: 'All courses whit status active',
+  })
+  findAllCourses(@Param('id', ParseUUIDPipe, ValidationPipe) id: string) {
+    return this.degreeService.findAllCourses(id);
   }
 
   @Get('by-faculty/:facultyId')

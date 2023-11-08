@@ -33,10 +33,6 @@ export class FacultyController {
     return this.facultyService.create(createFacultyDto, user);
   }
 
-  @Get()
-  findAll() {
-    return this.facultyService.findAll();
-  }
   @Get('by-university/:university_id')
   findAllByUniversity(
     @Param('university_id', ParseUUIDPipe, ValidationPipe)

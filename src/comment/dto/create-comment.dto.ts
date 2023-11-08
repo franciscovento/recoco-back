@@ -15,16 +15,6 @@ export class CreateCommentDto {
   comment: string;
 
   @IsNotEmpty()
-  @IsUUID()
-  @ApiProperty({ default: 'id of the course related' })
-  course_id: string;
-
-  @IsNotEmpty()
-  @IsUUID()
-  @ApiProperty({ default: 'id of the teacher related' })
-  teacher_id: string;
-
-  @IsNotEmpty()
   @IsNumber()
   @Min(1, { message: 'difficulty must be greater than 0' })
   @Max(5, { message: 'difficulty must be max  5' })

@@ -51,6 +51,21 @@ export class CourseService {
     }
   }
 
+  async findAllProfessorship(degree_id: string) {
+    try {
+      return await this.prisma.degreeCourse.findMany({
+        where: {
+          degree_id,
+        },
+        include: {
+          course: true,
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async findOne(id: string) {
     try {
       const course = await this.prisma.course.findUnique({ where: { id } });

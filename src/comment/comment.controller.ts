@@ -21,17 +21,24 @@ import { User } from 'src/common/decorators/user.decorator';
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
   // TODO: CHECK TRIGGERS AND COMMENTS CONTROLLERS
-  @Post()
+  @Post(':teacher_id/:course_id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   create(
+    @Param('teacher_id') teacher_id: string,
+    @Param('course_id') course_id: string,
     @Body() createCommentDto: CreateCommentDto,
     @User() user: UserRequest,
   ) {
-    return this.commentService.create(createCommentDto, user);
+    return this.commentService.create(
+      teacher_id,
+      course_id,
+      createCommentDto,
+      user,
+    );
   }
 
-  @Patch()
+  @Patch(':teacher_id/:course_id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   update(
@@ -48,7 +55,7 @@ export class CommentController {
     );
   }
 
-  @Delete(':id')
+  @Delete(':teacher_id/:course_id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   remove(

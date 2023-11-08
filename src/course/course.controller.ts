@@ -30,13 +30,22 @@ export class CourseController {
     return this.courseService.create(createCourseDto, user);
   }
 
-  @Get()
+  // @Get()
+  // @ApiOperation({
+  //   summary: 'Get all courses',
+  //   description: 'All course whit status active',
+  // })
+  // findAll() {
+  //   return this.courseService.findAll();
+  // }
+
+  @Get('/degree_id/:id')
   @ApiOperation({
-    summary: 'Get all courses',
-    description: 'All course whit status active',
+    summary: 'Get professorship',
+    description: 'All professorship whit status active from a degree',
   })
-  findAll() {
-    return this.courseService.findAll();
+  findAllProfessorship(@Param('degree_id') degree_id: string) {
+    return this.courseService.findAllProfessorship(degree_id);
   }
 
   @Get(':id')

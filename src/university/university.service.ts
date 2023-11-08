@@ -80,7 +80,7 @@ export class UniversityService {
         include: { country: true },
       });
       if (!university) {
-        throw new BadRequestException('This university does not exist in db');
+        throw new NotFoundException('This university does not exist in db');
       }
       return university;
     } catch (error) {
