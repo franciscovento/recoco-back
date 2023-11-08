@@ -4,15 +4,12 @@ export class LoginDto {
   @IsNotEmpty()
   @IsEmail()
   @ApiProperty({
-    default:
-      process.env.NODE_ENV === 'development'
-        ? 'fgvr92@gmail.com'
-        : 'jhon@test.com',
+    default: 'jhon@test.com',
   })
   email: string;
 
   @ApiProperty({
-    default: process.env.NODE_ENV === 'development' ? 'Test123@..' : 'password',
+    default: 'password',
   })
   @IsNotEmpty()
   @Length(4, 22, {
