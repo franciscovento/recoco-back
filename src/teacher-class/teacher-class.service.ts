@@ -57,6 +57,27 @@ export class TeacherClassService {
           course_id: id,
           status: 'active',
         },
+        include: {
+          course: {
+            select: {
+              course_code: true,
+              name: true,
+              short_name: true,
+            },
+          },
+          teacher: {
+            select: {
+              name: true,
+              last_name: true,
+              score: true,
+            },
+          },
+          user: {
+            select: {
+              username: true,
+            },
+          },
+        },
       });
       return teacherClasses;
     } catch (error) {

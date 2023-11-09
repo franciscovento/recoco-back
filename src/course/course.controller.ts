@@ -30,14 +30,14 @@ export class CourseController {
     return this.courseService.create(createCourseDto, user);
   }
 
-  // @Get()
-  // @ApiOperation({
-  //   summary: 'Get all courses',
-  //   description: 'All course whit status active',
-  // })
-  // findAll() {
-  //   return this.courseService.findAll();
-  // }
+  @Get()
+  @ApiOperation({
+    summary: 'Get all courses',
+    description: 'All course whit status active',
+  })
+  findAll() {
+    return this.courseService.findAll();
+  }
 
   @Get('/degree_id/:id')
   @ApiOperation({
