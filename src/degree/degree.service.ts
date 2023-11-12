@@ -51,7 +51,7 @@ export class DegreeService {
     }
   }
 
-  async findAllCourses(id: string) {
+  async findAllCourses(id: number) {
     try {
       return await this.prisma.degreeCourse.findMany({
         where: {
@@ -66,7 +66,7 @@ export class DegreeService {
     }
   }
 
-  async findAllByFaculty(facultyId: string) {
+  async findAllByFaculty(facultyId: number) {
     try {
       return await this.prisma.degree.findMany({
         where: {
@@ -79,18 +79,18 @@ export class DegreeService {
     }
   }
 
-  findOne(id: string) {
+  async findOne(id: number) {
     try {
-      const teacher = this.prisma.teacher.findUnique({ where: { id } });
-      if (!teacher) throw new NotFoundException('Teacher not found');
-      return teacher;
+      const degree = await this.prisma.degree.findUnique({ where: { id } });
+      if (!degree) throw new NotFoundException('Degree not found');
+      return degree;
     } catch (error) {
       throw error;
     }
   }
 
   async update(
-    id: string,
+    id: number,
     updateDegreeDto: UpdateDegreeDto,
     user: UserRequest,
   ) {
@@ -108,7 +108,7 @@ export class DegreeService {
     }
   }
 
-  async remove(id: string, user: UserRequest) {
+  async remove(id: number, user: UserRequest) {
     try {
       const degree = await this.prisma.degree.findUnique({ where: { id } });
       if (!degree) throw new NotFoundException('Degree not found');

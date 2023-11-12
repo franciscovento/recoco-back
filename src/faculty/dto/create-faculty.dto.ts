@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsUUID } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
 export class CreateFacultyDto {
   @ApiProperty({
@@ -9,10 +15,14 @@ export class CreateFacultyDto {
   @IsNotEmpty()
   name: string;
 
+  @IsOptional()
+  @IsString()
+  slug: string;
+
   @ApiProperty({
     description: 'University ID',
   })
   @IsNotEmpty()
-  @IsUUID()
-  university_id: string;
+  @IsNumber()
+  university_id: number;
 }

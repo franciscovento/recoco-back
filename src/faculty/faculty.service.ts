@@ -54,7 +54,7 @@ export class FacultyService {
       throw error;
     }
   }
-  async findAllByUniversity(university_id: string) {
+  async findAllByUniversity(university_id: number) {
     try {
       return await this.prisma.faculty.findMany({
         where: {
@@ -67,7 +67,7 @@ export class FacultyService {
     }
   }
 
-  async findOne(id: string) {
+  async findOne(id: number) {
     try {
       const faculty = await this.prisma.faculty.findUnique({
         where: { id },
@@ -93,7 +93,7 @@ export class FacultyService {
   }
 
   async update(
-    id: string,
+    id: number,
     updateFacultyDto: UpdateFacultyDto,
     user: UserRequest,
   ) {
@@ -127,7 +127,7 @@ export class FacultyService {
     }
   }
 
-  async remove(id: string, user: UserRequest) {
+  async remove(id: number, user: UserRequest) {
     try {
       const faculty = await this.prisma.faculty.findUnique({ where: { id } });
       const hasDegrees = await this.prisma.degree.findFirst({

@@ -7,8 +7,6 @@ import {
   Param,
   Delete,
   UseGuards,
-  ParseUUIDPipe,
-  ValidationPipe,
 } from '@nestjs/common';
 import { CourseService } from './course.service';
 import { CreateCourseDto } from './dto/create-course.dto';
@@ -39,82 +37,79 @@ export class CourseController {
     return this.courseService.findAll();
   }
 
-  @Get('/degree_id/:id')
+  @Get('/degree_id/:degree_id')
   @ApiOperation({
     summary: 'Get professorship',
     description: 'All professorship whit status active from a degree',
   })
   findAllProfessorship(@Param('degree_id') degree_id: string) {
-    return this.courseService.findAllProfessorship(degree_id);
+    return this.courseService.findAllProfessorship(+degree_id);
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe, ValidationPipe) id: string) {
-    return this.courseService.findOne(id);
+  findOne(@Param('id') id: string) {
+    return this.courseService.findOne(+id);
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   update(
-    @Param('id', ParseUUIDPipe, ValidationPipe) id: string,
+    @Param('id') id: string,
     @Body() updateCourseDto: UpdateCourseDto,
     @User() user: UserRequest,
   ) {
-    return this.courseService.update(id, updateCourseDto, user);
+    return this.courseService.update(+id, updateCourseDto, user);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  remove(
-    @Param('id', ParseUUIDPipe, ValidationPipe) id: string,
-    @User() user: UserRequest,
-  ) {
-    return this.courseService.remove(id, user);
+  remove(@Param('id') id: string, @User() user: UserRequest) {
+    return this.courseService.remove(+id, user);
   }
 
   @Post(':id/assign-degree/:degree_id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   assignDegree(
-    @Param('id', ParseUUIDPipe, ValidationPipe) id: string,
-    @Param('degree_id', ParseUUIDPipe, ValidationPipe) degree_id: string,
+    @Param('id') id: string,
+    @Param('degree_id') degree_id: string,
     @User() user: UserRequest,
   ) {
-    return this.courseService.assignDegree(id, degree_id, user);
+    return this.courseService.assignDegree(+id, +degree_id, user);
   }
 
   @Delete(':id/assign-degree/:degree_id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   deleteCourseDegreeDegree(
-    @Param('id', ParseUUIDPipe, ValidationPipe) id: string,
-    @Param('degree_id', ParseUUIDPipe, ValidationPipe) degree_id: string,
+    @Param('id') id: string,
+    @Param('degree_id') degree_id: string,
     @User() user: UserRequest,
   ) {
-    return this.courseService.deleteDegree(id, degree_id, user);
+    return this.courseService.deleteDegree(+id, +degree_id, user);
   }
 
   @Post(':id/assign-teacher/:teacher_id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   assignTeacher(
-    @Param('id', ParseUUIDPipe, ValidationPipe) id: string,
-    @Param('teacher_id', ParseUUIDPipe, ValidationPipe) teacher_id: string,
+    @Param('id') id: string,
+    @Param('teacher_id') teacher_id: string,
     @User() user: UserRequest,
   ) {
-    return this.courseService.assignTeacher(id, teacher_id, user);
+    return this.courseService.assignTeacher(+id, +teacher_id, user);
   }
 
   @Delete(':id/assign-teacher/:teacher_id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   deleteTeacher(
-    @Param('id', ParseUUIDPipe, ValidationPipe) id: string,
-    @Param('teacher_id', ParseUUIDPipe, ValidationPipe) teacher_id: string,
+    @Param('id') id: string,
+    @Param('teacher_id') teacher_id: string,
     @User() user: UserRequest,
   ) {
-    return this.courseService.deleteTeacher(id, teacher_id, user);
+    return this.courseService.deleteTeacher(+id, +teacher_id, user);
   }
 }

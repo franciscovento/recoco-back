@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsNotEmpty, IsUUID } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty, IsNumber } from 'class-validator';
 export class CreateCourseDto {
   @IsString()
   @ApiProperty({
@@ -23,7 +23,7 @@ export class CreateCourseDto {
   course_code: string;
 
   @IsNotEmpty()
-  @IsUUID()
-  @ApiProperty({ default: 'faculty_uuid' })
-  faculty_id: string;
+  @IsNumber()
+  @ApiProperty({ default: 'faculty id' })
+  faculty_id: number;
 }

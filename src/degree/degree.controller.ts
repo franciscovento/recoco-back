@@ -40,8 +40,8 @@ export class DegreeController {
     summary: 'Get all courses from a degree',
     description: 'All courses whit status active',
   })
-  findAllCourses(@Param('id', ParseUUIDPipe, ValidationPipe) id: string) {
-    return this.degreeService.findAllCourses(id);
+  findAllCourses(@Param('id') id: string) {
+    return this.degreeService.findAllCourses(+id);
   }
 
   @Get('by-faculty/:facultyId')
@@ -49,35 +49,30 @@ export class DegreeController {
     summary: 'Get all degrees from a faculty',
     description: 'All degrees whit status active',
   })
-  findAllByFaculty(
-    @Param('facultyId', ParseUUIDPipe, ValidationPipe) facultyId: string,
-  ) {
-    return this.degreeService.findAllByFaculty(facultyId);
+  findAllByFaculty(@Param('facultyId') facultyId: string) {
+    return this.degreeService.findAllByFaculty(+facultyId);
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe, ValidationPipe) id: string) {
-    return this.degreeService.findOne(id);
+  findOne(@Param('id') id: string) {
+    return this.degreeService.findOne(+id);
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   update(
-    @Param('id', ParseUUIDPipe, ValidationPipe) id: string,
+    @Param('id') id: string,
     @Body() updateDegreeDto: UpdateDegreeDto,
     @User() user: UserRequest,
   ) {
-    return this.degreeService.update(id, updateDegreeDto, user);
+    return this.degreeService.update(+id, updateDegreeDto, user);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  remove(
-    @Param('id', ParseUUIDPipe, ValidationPipe) id: string,
-    @User() user: UserRequest,
-  ) {
-    return this.degreeService.remove(id, user);
+  remove(@Param('id') id: string, @User() user: UserRequest) {
+    return this.degreeService.remove(+id, user);
   }
 }
