@@ -37,7 +37,7 @@ export class AuthService {
       const { password, email } = loginDto;
       const findUser = await this.prisma.user.findUnique({ where: { email } });
       if (!findUser) {
-        throw new NotFoundException('USER_NOT_FOUND');
+        throw new NotFoundException('Email or password not valid');
       }
 
       const checkPassword = await bcrypt.compare(password, findUser.password);
@@ -57,8 +57,11 @@ export class AuthService {
         httpOnly: true,
         maxAge: 7 * 24 * 60 * 60 * 1000,
       }); // 7 días en milisegundos
-
-      return res.json({ token });
+      const { password: pass, ...restUser } = findUser;
+      return res.json({
+        user: restUser,
+        token: token,
+      });
     } catch (error) {
       throw error;
     }
@@ -105,6 +108,73 @@ export class AuthService {
       return {
         message: 'Password changed',
       };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async requestResetPassword(email: string) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          email,
+        },
+      });
+
+      if (!user) {
+        throw new NotFoundException(`User whit email ${email} not found`);
+      }
+
+      const token = this.jwtService.sign({ sub: user.id }, { expiresIn: '1h' });
+
+      await this.prisma.user.update({
+        data: {
+          reset_token: token,
+        },
+        where: {
+          id: user.id,
+        },
+      });
+
+      //TODO: Send email with token
+
+      return {
+        message: 'Reset password request',
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async resetPassword(code: string, password: string) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          reset_token: code,
+        },
+      });
+
+      if (!user) {
+        throw new NotFoundException('USER_NOT_FOUND');
+      }
+
+      const decoded = this.jwtService.verify(code);
+      console.log(decoded);
+
+      if (decoded.exp < Date.now() / 1000) {
+        throw new UnauthorizedException('Token expired');
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await this.prisma.user.update({
+        data: {
+          password: hashedPassword,
+          reset_token: null,
+        },
+        where: {
+          id: user.id,
+        },
+      });
     } catch (error) {
       throw error;
     }

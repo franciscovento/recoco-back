@@ -4,8 +4,8 @@ import {
   Post,
   Body,
   UseGuards,
-  Req,
   Res,
+  Query,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
@@ -47,6 +47,21 @@ export class AuthController {
   @Post('logout')
   logout(@Res() res: Response) {
     return this.authService.logout(res);
+  }
+
+  @Post('request-reset-password')
+  @ApiOperation({ summary: 'Send email to reset password' })
+  requestResetPassword(@Body('email') email: string) {
+    return this.authService.requestResetPassword(email);
+  }
+
+  @Post('reset-password')
+  @ApiOperation({ summary: 'Set new password' })
+  resetPassword(
+    @Body('password') password: string,
+    @Query('code') code: string,
+  ) {
+    return this.authService.resetPassword(code, password);
   }
 
   @Get('me')
