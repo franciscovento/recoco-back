@@ -31,8 +31,8 @@ export class CommentController {
     @User() user: UserRequest,
   ) {
     return this.commentService.create(
-      teacher_id,
-      course_id,
+      +teacher_id,
+      +course_id,
       createCommentDto,
       user,
     );
@@ -48,8 +48,8 @@ export class CommentController {
     @User() user: UserRequest,
   ) {
     return this.commentService.update(
-      teacher_id,
-      course_id,
+      +teacher_id,
+      +course_id,
       updateCommentDto,
       user,
     );
@@ -63,7 +63,7 @@ export class CommentController {
     @Param('course_id') course_id: string,
     @User() user: UserRequest,
   ) {
-    return this.commentService.remove(teacher_id, course_id, user);
+    return this.commentService.remove(+teacher_id, +course_id, user);
   }
 
   @Post(':teacher_id/:course_id/:user_id/like')
@@ -75,7 +75,7 @@ export class CommentController {
     @Param('user_id') user_id: string,
     @User() user: UserRequest,
   ) {
-    this.commentService.likeComment(teacher_id, course_id, user_id, user);
+    this.commentService.likeComment(+teacher_id, +course_id, user_id, user);
   }
 
   @Post(':teacher_id/:course_id/:user_id/dislike')
@@ -87,6 +87,6 @@ export class CommentController {
     @Param('user_id') user_id: string,
     @User() user: UserRequest,
   ) {
-    this.commentService.dislikeComment(teacher_id, course_id, user_id, user);
+    this.commentService.dislikeComment(+teacher_id, +course_id, user_id, user);
   }
 }

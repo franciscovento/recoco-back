@@ -12,8 +12,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class CommentService {
   constructor(private prisma: PrismaService) {}
   async create(
-    teacher_id: string,
-    course_id: string,
+    teacher_id: number,
+    course_id: number,
     createCommentDto: CreateCommentDto,
     user: UserRequest,
   ) {
@@ -48,8 +48,8 @@ export class CommentService {
   }
 
   async update(
-    teacher_id: string,
-    course_id: string,
+    teacher_id: number,
+    course_id: number,
     updateCommentDto: UpdateCommentDto,
     user: UserRequest,
   ) {
@@ -89,7 +89,7 @@ export class CommentService {
     }
   }
 
-  async remove(teacher_id: string, course_id: string, user: UserRequest) {
+  async remove(teacher_id: number, course_id: number, user: UserRequest) {
     try {
       const comment = await this.prisma.comment.findUnique({
         where: {
@@ -124,8 +124,8 @@ export class CommentService {
   }
 
   async likeComment(
-    teacher_id: string,
-    course_id: string,
+    teacher_id: number,
+    course_id: number,
     user_id: string,
     user: UserRequest,
   ) {
@@ -168,8 +168,8 @@ export class CommentService {
   }
 
   async dislikeComment(
-    teacher_id: string,
-    course_id: string,
+    teacher_id: number,
+    course_id: number,
     user_id: string,
     user: UserRequest,
   ) {

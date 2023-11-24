@@ -34,7 +34,7 @@ export class TeacherClassController {
 
   @Get('by-course/:id')
   findAllByDegree(@Param('id') id: string) {
-    return this.teacherClassService.findAllByCourse(id);
+    return this.teacherClassService.findAllByCourse(+id);
   }
 
   @Get(':teacher_id/:course_id')
@@ -42,7 +42,7 @@ export class TeacherClassController {
     @Param('teacher_id') teacher_id: string,
     @Param('course_id') course_id: string,
   ) {
-    return this.teacherClassService.findOne(teacher_id, course_id);
+    return this.teacherClassService.findOne(+teacher_id, +course_id);
   }
 
   @Get(':teacher_id/:course_id/comments')
@@ -50,7 +50,7 @@ export class TeacherClassController {
     @Param('teacher_id') teacher_id: string,
     @Param('course_id') course_id: string,
   ) {
-    return this.teacherClassService.findComments(teacher_id, course_id);
+    return this.teacherClassService.findComments(+teacher_id, +course_id);
   }
 
   @Post(':teacher_id/:course_id/add-comment')
@@ -63,8 +63,8 @@ export class TeacherClassController {
     @User() user: UserRequest,
   ) {
     return this.teacherClassService.addComment(
-      teacher_id,
-      course_id,
+      +teacher_id,
+      +course_id,
       comment,
       user,
     );
@@ -78,6 +78,6 @@ export class TeacherClassController {
     @Param('course_id') course_id: string,
     @User() user: UserRequest,
   ) {
-    return this.teacherClassService.remove(teacher_id, course_id, user);
+    return this.teacherClassService.remove(+teacher_id, +course_id, user);
   }
 }

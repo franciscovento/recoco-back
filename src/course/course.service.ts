@@ -51,7 +51,7 @@ export class CourseService {
     }
   }
 
-  async findAllProfessorship(degree_id: string) {
+  async findAllProfessorship(degree_id: number) {
     try {
       return await this.prisma.degreeCourse.findMany({
         where: {
@@ -66,7 +66,7 @@ export class CourseService {
     }
   }
 
-  async findOne(id: string) {
+  async findOne(id: number) {
     try {
       const course = await this.prisma.course.findUnique({ where: { id } });
       if (!course) {
@@ -79,7 +79,7 @@ export class CourseService {
   }
 
   async update(
-    id: string,
+    id: number,
     updateCourseDto: UpdateCourseDto,
     user: UserRequest,
   ) {
@@ -102,7 +102,7 @@ export class CourseService {
     }
   }
 
-  async remove(id: string, user: UserRequest) {
+  async remove(id: number, user: UserRequest) {
     try {
       const course = await this.prisma.course.findUnique({ where: { id } });
       if (!course) {
@@ -124,7 +124,7 @@ export class CourseService {
     }
   }
 
-  async assignDegree(id: string, degree_id: string, user: UserRequest) {
+  async assignDegree(id: number, degree_id: number, user: UserRequest) {
     try {
       return await this.prisma.degreeCourse.create({
         data: {
@@ -138,7 +138,7 @@ export class CourseService {
     }
   }
 
-  async deleteDegree(id: string, degree_id: string, user: UserRequest) {
+  async deleteDegree(id: number, degree_id: number, user: UserRequest) {
     try {
       const courseDegree = await this.prisma.degreeCourse.findUnique({
         where: {
@@ -170,7 +170,7 @@ export class CourseService {
     }
   }
 
-  async assignTeacher(id: string, teacherId: string, user: UserRequest) {
+  async assignTeacher(id: number, teacherId: number, user: UserRequest) {
     try {
       return await this.prisma.courseTeacher.create({
         data: {
@@ -184,7 +184,7 @@ export class CourseService {
     }
   }
 
-  async deleteTeacher(id: string, teacherId: string, user: UserRequest) {
+  async deleteTeacher(id: number, teacherId: number, user: UserRequest) {
     try {
       const courseTeacher = await this.prisma.courseTeacher.findUnique({
         where: {

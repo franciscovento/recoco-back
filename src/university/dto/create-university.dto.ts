@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateUniversityDto {
   @ApiProperty({
@@ -8,6 +8,10 @@ export class CreateUniversityDto {
   })
   @IsNotEmpty()
   name: string;
+
+  @IsOptional()
+  @IsString()
+  slug: string;
 
   @ApiProperty({
     description: 'Country ID from BD',

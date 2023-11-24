@@ -11,6 +11,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { UserRequest } from 'src/common/interfaces/userRequest.interface';
 import { ChanguePasswordDto } from './dto/changue-password.dto';
+import { Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -31,32 +32,46 @@ export class AuthService {
     }
   }
 
-  async login(loginDto: LoginDto) {
-    const { password, email } = loginDto;
-    const findUser = await this.prisma.user.findUnique({ where: { email } });
-    if (!findUser) {
-      throw new NotFoundException('USER_NOT_FOUND');
+  async login(res: Response, loginDto: LoginDto) {
+    try {
+      const { password, email } = loginDto;
+      const findUser = await this.prisma.user.findUnique({ where: { email } });
+      if (!findUser) {
+        throw new NotFoundException('Email or password not valid');
+      }
+
+      const checkPassword = await bcrypt.compare(password, findUser.password);
+      if (!checkPassword) {
+        throw new UnauthorizedException('Email or password not valid');
+      }
+
+      const payload = {
+        sub: findUser.id,
+        username: findUser.username,
+        rol: findUser.rol,
+        isVerified: findUser.is_verified,
+      };
+
+      const token = this.jwtService.sign(payload);
+      res.cookie('auth_token', token, {
+        httpOnly: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      }); // 7 días en milisegundos
+      const { password: pass, ...restUser } = findUser;
+      return res.json({
+        user: restUser,
+        token: token,
+      });
+    } catch (error) {
+      throw error;
     }
+  }
 
-    const checkPassword = await bcrypt.compare(password, findUser.password);
-    if (!checkPassword) {
-      throw new UnauthorizedException('Email or password not valid');
-    }
-
-    const payload = {
-      sub: findUser.id,
-      username: findUser.username,
-      rol: findUser.rol,
-      isVerified: findUser.is_verified,
-    };
-
-    const token = this.jwtService.sign(payload);
-    const data = {
-      message: 'Correct credentials',
-      token,
-    };
-
-    return data;
+  async logout(res: Response) {
+    res.clearCookie('auth_token');
+    return res.json({
+      message: 'Logout success',
+    });
   }
 
   async changuePassword(
@@ -98,13 +113,81 @@ export class AuthService {
     }
   }
 
+  async requestResetPassword(email: string) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          email,
+        },
+      });
+
+      if (!user) {
+        throw new NotFoundException(`User whit email ${email} not found`);
+      }
+
+      const token = this.jwtService.sign({ sub: user.id }, { expiresIn: '1h' });
+
+      await this.prisma.user.update({
+        data: {
+          reset_token: token,
+        },
+        where: {
+          id: user.id,
+        },
+      });
+
+      //TODO: Send email with token
+
+      return {
+        message: 'Reset password request',
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async resetPassword(code: string, password: string) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          reset_token: code,
+        },
+      });
+
+      if (!user) {
+        throw new NotFoundException('USER_NOT_FOUND');
+      }
+
+      const decoded = this.jwtService.verify(code);
+      console.log(decoded);
+
+      if (decoded.exp < Date.now() / 1000) {
+        throw new UnauthorizedException('Token expired');
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await this.prisma.user.update({
+        data: {
+          password: hashedPassword,
+          reset_token: null,
+        },
+        where: {
+          id: user.id,
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async me(user: UserRequest) {
     try {
-      return await this.prisma.user.findUnique({
+      const { password, ...rest } = await this.prisma.user.findUnique({
         where: {
           id: user.sub,
         },
       });
+      return rest;
     } catch (error) {
       throw error;
     }

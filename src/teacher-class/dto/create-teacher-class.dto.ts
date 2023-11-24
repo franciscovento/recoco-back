@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
 export class CreateTeacherClassDto {
   @IsNotEmpty()
@@ -34,7 +40,7 @@ export class CreateTeacherClassDto {
   course_code: string;
 
   @IsNotEmpty()
-  @IsUUID()
-  @ApiProperty({ default: 'faculty_uuid' })
-  faculty_id: string;
+  @IsNumber()
+  @ApiProperty({ default: 'faculty id' })
+  faculty_id: number;
 }

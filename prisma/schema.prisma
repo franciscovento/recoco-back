@@ -55,6 +55,7 @@ model User {
   is_verified Boolean @default(false)
   university_id String?
   degree_id String? 
+  reset_token String? @unique
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
 
@@ -67,14 +68,18 @@ model User {
   teacher Teacher[]
   course Course[]
   commentLikes CommentLikes[]
+  universityComments UniversityComment[]
+  facultyComments FacultyComment[]
+  degreeComent DegreeComent[]
 }
 
 model University {
-  id String @id @unique @default(uuid())
+  id Int @id @unique @default(autoincrement()) 
   name String 
   country_id Int
   website String?
   phone String?
+  slug String? @unique 
   status Status? @default(active)
   created_by String
   created_at DateTime  @default(now())
@@ -83,14 +88,16 @@ model University {
   user User @relation(fields: [created_by], references: [id])
   country Country @relation(fields: [country_id], references: [id])
   faculties Faculty[]
+  universityComments UniversityComment[]
 
 }
 
 model Faculty {
-  id String @id @unique @default(uuid())
+  id Int @id @unique @default(autoincrement()) 
   name String 
   status Status? @default(active)
-  university_id String
+  slug String? @unique 
+  university_id Int
   created_by String
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
@@ -98,27 +105,29 @@ model Faculty {
   user User @relation(fields: [created_by], references: [id])
   degrees Degree[]
   course Course[]
-
+  facultyComments FacultyComment[]
 }
 
 model Degree {
-  id String @id @unique @default(uuid())
+  id Int @id @unique @default(autoincrement()) 
   name String
   description String?
+  slug String? @unique 
   duration Decimal?
   status Status? @default(active)
-  faculty_id String
+  faculty_id Int
   created_by String
   degreeCourses DegreeCourse[]
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
   user User @relation(fields: [created_by], references: [id])
   faculty Faculty @relation(fields: [faculty_id], references: [id])
+  degreeComent DegreeComent[]
 
 }
 
  model Teacher {
-  id String @id @unique @default(uuid())
+  id Int @id @unique @default(autoincrement()) 
   name String
   last_name String
   score Int?
@@ -131,12 +140,12 @@ model Degree {
  }
 
  model Course {
-  id String @id @unique @default(uuid())
+  id Int @id @unique @default(autoincrement()) 
   name String
   description String? 
   short_name String
   course_code String?
-  faculty_id String
+  faculty_id Int
   status Status? @default(active)
   created_by String
   created_at DateTime  @default(now())
@@ -156,34 +165,33 @@ model Degree {
   likes Int? @default(0)
   disLikes Int? @default(0)
   status CommentStatus @default(approved)
-  course_id String
-  teacher_id String
+  course_id Int
+  teacher_id Int
   created_by String 
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
-  commentLikes CommentLikes []
+  commentLikes CommentLikes [] 
   courseTeacher CourseTeacher @relation(fields: [course_id, teacher_id], references: [course_id, teacher_id])
   user User @relation(fields: [created_by], references: [id])
   @@id([course_id, teacher_id, created_by])
+  
  }
 
 
  model CommentLikes {
-  course_id String
-  teacher_id String
+  course_id Int
+  teacher_id Int
   user_id String
   created_by String
   is_like Boolean
-  comment Comment @relation(fields: [course_id, teacher_id, user_id], references: [course_id, teacher_id, created_by])
+  comment Comment @relation(fields: [course_id, teacher_id, user_id], references: [course_id, teacher_id, created_by]) 
   user User @relation(fields: [created_by], references: [id])
    @@id([course_id, teacher_id, user_id, created_by])
  }
 
-
-
  model DegreeCourse {
-  degree_id String 
-  course_id String 
+  degree_id Int 
+  course_id Int 
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
   created_by String
@@ -194,8 +202,8 @@ model Degree {
  }
 
  model CourseTeacher {
-  course_id String 
-  teacher_id String 
+  course_id Int 
+  teacher_id Int 
   quality Decimal?
   difficulty Decimal? 
   status Status @default(active)
@@ -206,6 +214,38 @@ model Degree {
   teacher Teacher @relation(fields: [teacher_id], references: [id])
   user User @relation(fields: [created_by], references: [id])
   @@id([course_id, teacher_id])
-
   comments Comment[]
+ }
+
+ model UniversityComment {
+  user_id String
+  university_id Int
+  comment String
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  user User @relation(fields: [user_id], references: [id])
+  university University @relation(fields: [university_id], references: [id])
+  @@id([user_id, university_id])
+ }
+
+ model FacultyComment {
+  user_id String
+  faculty_id Int
+  comment String
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  user User @relation(fields: [user_id], references: [id])
+  faculty Faculty @relation(fields: [faculty_id], references: [id])
+  @@id([user_id, faculty_id])
+ }
+
+ model DegreeComent {
+  user_id String
+  degree_id Int
+  comment String
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  user User @relation(fields: [user_id], references: [id])
+  degree Degree @relation(fields: [degree_id], references: [id])
+  @@id([user_id, degree_id])
  }

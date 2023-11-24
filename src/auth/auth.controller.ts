@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  Res,
+  Query,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -7,6 +15,7 @@ import { ChanguePasswordDto } from './dto/changue-password.dto';
 import { UserRequest } from 'src/common/interfaces/userRequest.interface';
 import { User } from 'src/common/decorators/user.decorator';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { Response } from 'express';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -21,8 +30,8 @@ export class AuthController {
 
   @Post('login')
   @ApiOperation({ summary: 'Login to app to get access token' })
-  login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  login(@Res() res: Response, @Body() loginDto: LoginDto) {
+    return this.authService.login(res, loginDto);
   }
 
   @Post('changue-password')
@@ -34,6 +43,25 @@ export class AuthController {
     @User() user: UserRequest,
   ) {
     return this.authService.changuePassword(changuePasswordDto, user);
+  }
+  @Post('logout')
+  logout(@Res() res: Response) {
+    return this.authService.logout(res);
+  }
+
+  @Post('request-reset-password')
+  @ApiOperation({ summary: 'Send email to reset password' })
+  requestResetPassword(@Body('email') email: string) {
+    return this.authService.requestResetPassword(email);
+  }
+
+  @Post('reset-password')
+  @ApiOperation({ summary: 'Set new password' })
+  resetPassword(
+    @Body('password') password: string,
+    @Query('code') code: string,
+  ) {
+    return this.authService.resetPassword(code, password);
   }
 
   @Get('me')

@@ -4,7 +4,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateTeacherClassDto } from './dto/create-teacher-class.dto';
-import { UpdateTeacherClassDto } from './dto/update-teacher-class.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserRequest } from 'src/common/interfaces/userRequest.interface';
 import { CreateCommentDto } from 'src/comment/dto/create-comment.dto';
@@ -18,9 +17,12 @@ export class TeacherClassService {
     user: UserRequest,
   ) {
     try {
+      const normalizedName = createTeacherClassDto.course_name
+        .toLowerCase()
+        .trim();
       const course = await this.prisma.course.create({
         data: {
-          name: createTeacherClassDto.course_name,
+          name: normalizedName,
           description: createTeacherClassDto.description,
           short_name: createTeacherClassDto.short_name,
           course_code: createTeacherClassDto.course_code,
@@ -46,16 +48,43 @@ export class TeacherClassService {
       });
       return course;
     } catch (error) {
+      if (error.code === 'P2002') {
+        throw new NotAcceptableException({
+          message: 'Some of the data provided already exist in db',
+          error: error.meta.target,
+        });
+      }
       throw error;
     }
   }
 
-  async findAllByCourse(id: string) {
+  async findAllByCourse(id: number) {
     try {
       const teacherClasses = await this.prisma.courseTeacher.findMany({
         where: {
           course_id: id,
           status: 'active',
+        },
+        include: {
+          course: {
+            select: {
+              course_code: true,
+              name: true,
+              short_name: true,
+            },
+          },
+          teacher: {
+            select: {
+              name: true,
+              last_name: true,
+              score: true,
+            },
+          },
+          user: {
+            select: {
+              username: true,
+            },
+          },
         },
       });
       return teacherClasses;
@@ -64,7 +93,7 @@ export class TeacherClassService {
     }
   }
 
-  async findOne(teacher_id: string, course_id: string) {
+  async findOne(teacher_id: number, course_id: number) {
     try {
       const courseTeacher = await this.prisma.courseTeacher.findUnique({
         where: {
@@ -76,6 +105,11 @@ export class TeacherClassService {
         include: {
           course: true,
           teacher: true,
+          _count: {
+            select: {
+              comments: true,
+            },
+          },
         },
       });
       if (!courseTeacher) {
@@ -87,7 +121,7 @@ export class TeacherClassService {
     }
   }
 
-  async findComments(teacher_id: string, course_id: string) {
+  async findComments(teacher_id: number, course_id: number) {
     try {
       const comments = await this.prisma.comment.findMany({
         where: {
@@ -103,8 +137,8 @@ export class TeacherClassService {
   }
 
   async addComment(
-    teacher_id: string,
-    course_id: string,
+    teacher_id: number,
+    course_id: number,
     createCommentDto: CreateCommentDto,
     user: UserRequest,
   ) {
@@ -138,7 +172,7 @@ export class TeacherClassService {
     }
   }
 
-  async remove(teacher_id: string, course_id: string, user: UserRequest) {
+  async remove(teacher_id: number, course_id: number, user: UserRequest) {
     try {
       const courseTeacher = await this.prisma.courseTeacher.findUnique({
         where: {
@@ -148,14 +182,28 @@ export class TeacherClassService {
           },
         },
       });
+      const hasComments = await this.prisma.comment.findFirst({
+        where: {
+          course_id,
+          teacher_id,
+        },
+      });
+
       if (!courseTeacher) {
-        throw new NotFoundException('Comment not found');
+        throw new NotFoundException('Teacher class not found');
       }
       if (courseTeacher.created_by !== user.sub) {
         throw new NotFoundException(
           'You are not allowed to delete this teacher class',
         );
       }
+
+      if (hasComments && user.rol === 'normal') {
+        throw new NotAcceptableException(
+          'This teacher class has comments, you dont have enough permissions to delete it',
+        );
+      }
+
       return await this.prisma.courseTeacher.update({
         data: {
           status: 'deleted',

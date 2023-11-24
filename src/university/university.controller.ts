@@ -43,7 +43,7 @@ export class UniversityController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.universityService.findOne(id);
+    return this.universityService.findOne(+id);
   }
 
   @Patch(':id')
@@ -54,13 +54,13 @@ export class UniversityController {
     @Body() updateUniversityDto: UpdateUniversityDto,
     @User() user: UserRequest,
   ) {
-    return this.universityService.update(id, updateUniversityDto, user);
+    return this.universityService.update(+id, updateUniversityDto, user);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   remove(@Param('id') id: string, @User() user: UserRequest) {
-    return this.universityService.remove(id, user);
+    return this.universityService.remove(+id, user);
   }
 }

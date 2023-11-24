@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  NotAcceptableException,
   NotFoundException,
   UnauthorizedException,
   UnprocessableEntityException,
@@ -73,7 +74,7 @@ export class UniversityService {
     }
   }
 
-  async findOne(id: string) {
+  async findOne(id: number) {
     try {
       const university = await this.prisma.university.findUnique({
         where: { id },
@@ -89,7 +90,7 @@ export class UniversityService {
   }
 
   async update(
-    id: string,
+    id: number,
     updateUniversityDto: UpdateUniversityDto,
     user: UserRequest,
   ) {
@@ -97,6 +98,19 @@ export class UniversityService {
       const university = await this.prisma.university.findUnique({
         where: { id },
       });
+
+      const hasFaculties = await this.prisma.faculty.findFirst({
+        where: {
+          university_id: university.id,
+        },
+      });
+
+      if (hasFaculties && user.rol === 'normal') {
+        throw new NotAcceptableException(
+          'This university has faculties, you dont have enough permissions to update it',
+        );
+      }
+
       if (!university) {
         throw new NotFoundException('University record not found');
       }
@@ -112,7 +126,7 @@ export class UniversityService {
     }
   }
 
-  async remove(id: string, user: UserRequest) {
+  async remove(id: number, user: UserRequest) {
     try {
       const university = await this.prisma.university.findUnique({
         where: { id },
@@ -124,6 +138,18 @@ export class UniversityService {
 
       if (university.created_by !== user.sub) {
         throw new UnauthorizedException('Not enough permissions');
+      }
+
+      const hasFaculties = await this.prisma.faculty.findFirst({
+        where: {
+          university_id: university.id,
+        },
+      });
+
+      if (hasFaculties && user.rol === 'normal') {
+        throw new NotAcceptableException(
+          'This university has faculties, you dont have enough permissions to update it',
+        );
       }
 
       return await this.prisma.university.update({

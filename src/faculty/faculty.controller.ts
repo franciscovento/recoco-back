@@ -7,8 +7,6 @@ import {
   Param,
   Delete,
   UseGuards,
-  ParseUUIDPipe,
-  ValidationPipe,
 } from '@nestjs/common';
 import { FacultyService } from './faculty.service';
 import { CreateFacultyDto } from './dto/create-faculty.dto';
@@ -35,15 +33,15 @@ export class FacultyController {
 
   @Get('by-university/:university_id')
   findAllByUniversity(
-    @Param('university_id', ParseUUIDPipe, ValidationPipe)
+    @Param('university_id')
     university_id: string,
   ) {
-    return this.facultyService.findAllByUniversity(university_id);
+    return this.facultyService.findAllByUniversity(+university_id);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.facultyService.findOne(id);
+    return this.facultyService.findOne(+id);
   }
 
   @Patch(':id')
@@ -54,13 +52,13 @@ export class FacultyController {
     @Body() updateFacultyDto: UpdateFacultyDto,
     @User() user: UserRequest,
   ) {
-    return this.facultyService.update(id, updateFacultyDto, user);
+    return this.facultyService.update(+id, updateFacultyDto, user);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   remove(@Param('id') id: string, @User() user: UserRequest) {
-    return this.facultyService.remove(id, user);
+    return this.facultyService.remove(+id, user);
   }
 }

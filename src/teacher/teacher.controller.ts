@@ -38,7 +38,7 @@ export class TeacherController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.teacherService.findOne(id);
+    return this.teacherService.findOne(+id);
   }
 
   @Patch(':id')
@@ -49,24 +49,24 @@ export class TeacherController {
     @Body() updateTeacherDto: UpdateTeacherDto,
     @User() user: UserRequest,
   ) {
-    return this.teacherService.update(id, updateTeacherDto, user);
+    return this.teacherService.update(+id, updateTeacherDto, user);
   }
 
-  @Delete(':id')
+  @Delete(':+')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   remove(@Param('id') id: string, @User() user: UserRequest) {
-    return this.teacherService.remove(id, user);
+    return this.teacherService.remove(+id, user);
   }
 
   @Get(':id/courses')
   findAllCourses(@Param('id') id: string) {
-    return this.teacherService.findAllCourses(id);
+    return this.teacherService.findAllCourses(+id);
   }
 
   @Get(':id/courses/:course_id')
   findCourse(@Param('id') id: string, @Param('course_id') course_id: string) {
-    return this.teacherService.findCourse(id, course_id);
+    return this.teacherService.findCourse(+id, +course_id);
   }
 
   @Get(':id/courses/:course_id/comments')
@@ -74,7 +74,7 @@ export class TeacherController {
     @Param('id') id: string,
     @Param('course_id') course_id: string,
   ) {
-    return this.teacherService.findAllComments(id, course_id);
+    return this.teacherService.findAllComments(+id, +course_id);
   }
 
   @Post(':id/assign-course/:course_id')
@@ -85,6 +85,6 @@ export class TeacherController {
     @Param('course_id') course_id: string,
     @User() user: UserRequest,
   ) {
-    return this.teacherService.assignCourse(id, course_id, user);
+    return this.teacherService.assignCourse(+id, +course_id, user);
   }
 }
