@@ -89,6 +89,7 @@ model University {
   country Country @relation(fields: [country_id], references: [id])
   faculties Faculty[]
   universityComments UniversityComment[]
+  teachers Teacher[]
 
 }
 
@@ -131,12 +132,14 @@ model Degree {
   name String
   last_name String
   score Int?
+  university_id Int
   status Status? @default(active)
   created_by String
   courseTeacher CourseTeacher[]
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
   user User @relation(fields: [created_by], references: [id])
+  university University @relation(fields: [university_id], references: [id])
  }
 
  model Course {
@@ -204,6 +207,7 @@ model Degree {
  model CourseTeacher {
   course_id Int 
   teacher_id Int 
+  teacher_class_name String?
   quality Decimal?
   difficulty Decimal? 
   status Status @default(active)

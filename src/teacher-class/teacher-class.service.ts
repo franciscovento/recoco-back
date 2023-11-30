@@ -20,6 +20,13 @@ export class TeacherClassService {
       const normalizedName = createTeacherClassDto.course_name
         .toLowerCase()
         .trim();
+
+      const { university_id } = await this.prisma.faculty.findUnique({
+        where: {
+          id: createTeacherClassDto.faculty_id,
+        },
+      });
+
       const course = await this.prisma.course.create({
         data: {
           name: normalizedName,
@@ -40,6 +47,7 @@ export class TeacherClassService {
                   name: createTeacherClassDto.teacher_name,
                   last_name: createTeacherClassDto.last_name,
                   created_by: user.sub,
+                  university_id,
                 },
               },
             },

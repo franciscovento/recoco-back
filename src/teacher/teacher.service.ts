@@ -15,6 +15,7 @@ export class TeacherService {
           name: createTeacherDto.name,
           last_name: createTeacherDto.last_name,
           created_by: user.sub,
+          university_id: createTeacherDto.university_id,
         },
       });
     } catch (error) {
