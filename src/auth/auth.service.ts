@@ -56,6 +56,7 @@ export class AuthService {
       res.cookie('auth_token', token, {
         httpOnly: true,
         maxAge: 7 * 24 * 60 * 60 * 1000,
+        sameSite: 'none',
       }); // 7 días en milisegundos
       const { password: pass, ...restUser } = findUser;
       return res.json({
