@@ -1,6 +1,6 @@
 export const corsConfig = {
   development: {
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:3000', 'https://recoco-front-v2.vercel.app'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
   },
