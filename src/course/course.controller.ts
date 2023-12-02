@@ -15,6 +15,7 @@ import { User } from 'src/common/decorators/user.decorator';
 import { UserRequest } from 'src/common/interfaces/userRequest.interface';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { CreateCourseDegree } from './dto/create-course-degree';
 
 @Controller('course')
 @ApiTags('course')
@@ -26,6 +27,16 @@ export class CourseController {
   @ApiBearerAuth()
   create(@Body() createCourseDto: CreateCourseDto, @User() user: UserRequest) {
     return this.courseService.create(createCourseDto, user);
+  }
+
+  @Post('/with-degree')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  createWithDegree(
+    @Body() createCourseDto: CreateCourseDegree,
+    @User() user: UserRequest,
+  ) {
+    return this.courseService.createWithDegree(createCourseDto, user);
   }
 
   @Get()

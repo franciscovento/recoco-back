@@ -146,7 +146,7 @@ model Degree {
   id Int @id @unique @default(autoincrement()) 
   name String
   description String? 
-  short_name String
+  short_name String?
   course_code String?
   faculty_id Int
   status Status? @default(active)

@@ -7,6 +7,7 @@ import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { UserRequest } from 'src/common/interfaces/userRequest.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateCourseDegree } from './dto/create-course-degree';
 
 @Injectable()
 export class CourseService {
@@ -39,6 +40,49 @@ export class CourseService {
     }
   }
 
+  async createWithDegree(
+    createCourseDegree: CreateCourseDegree,
+    user: UserRequest,
+  ) {
+    try {
+      const normalizedName = createCourseDegree.name.toLowerCase().trim();
+      const courseExist = await this.prisma.course.findFirst({
+        where: {
+          faculty_id: createCourseDegree.faculty_id,
+          name: normalizedName,
+        },
+      });
+
+      if (courseExist) {
+        return await this.prisma.degreeCourse.create({
+          data: {
+            course_id: courseExist.id,
+            degree_id: createCourseDegree.degree_id,
+            created_by: user.sub,
+          },
+        });
+      }
+
+      return await this.prisma.course.create({
+        data: {
+          name: normalizedName,
+          faculty_id: createCourseDegree.faculty_id,
+          created_by: user.sub,
+          short_name: '',
+          course_code: createCourseDegree.course_code,
+          degreeCourses: {
+            create: {
+              degree_id: createCourseDegree.degree_id,
+              created_by: user.sub,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async findAll() {
     try {
       return await this.prisma.course.findMany({
@@ -58,7 +102,31 @@ export class CourseService {
           degree_id,
         },
         include: {
-          course: true,
+          course: {
+            select: {
+              name: true,
+              course_code: true,
+              short_name: true,
+              faculty_id: true,
+              created_at: true,
+              created_by: true,
+              status: true,
+              courseTeacher: {
+                select: {
+                  _count: {
+                    select: {
+                      comments: true,
+                    },
+                  },
+                },
+              },
+              _count: {
+                select: {
+                  courseTeacher: true,
+                },
+              },
+            },
+          },
         },
       });
     } catch (error) {

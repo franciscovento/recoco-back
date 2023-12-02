@@ -81,7 +81,16 @@ export class DegreeService {
 
   async findOne(id: number) {
     try {
-      const degree = await this.prisma.degree.findUnique({ where: { id } });
+      const degree = await this.prisma.degree.findUnique({
+        where: { id },
+        include: {
+          faculty: {
+            include: {
+              university: true,
+            },
+          },
+        },
+      });
       if (!degree) throw new NotFoundException('Degree not found');
       return degree;
     } catch (error) {
@@ -102,6 +111,32 @@ export class DegreeService {
       return this.prisma.degree.update({
         where: { id },
         data: { ...updateDegreeDto },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async removeDegreeCourse(id: number, course_id: number, user: UserRequest) {
+    try {
+      const degreeCourse = await this.prisma.degreeCourse.findUnique({
+        where: {
+          degree_id_course_id: {
+            course_id,
+            degree_id: id,
+          },
+        },
+      });
+      if (!degreeCourse) throw new NotFoundException('Degree course not found');
+      if (degreeCourse.created_by !== user.sub)
+        throw new NotFoundException('You cannot delete this degree course');
+      return this.prisma.degreeCourse.delete({
+        where: {
+          degree_id_course_id: {
+            course_id,
+            degree_id: id,
+          },
+        },
       });
     } catch (error) {
       throw error;

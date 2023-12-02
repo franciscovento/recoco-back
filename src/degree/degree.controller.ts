@@ -69,6 +69,17 @@ export class DegreeController {
     return this.degreeService.update(+id, updateDegreeDto, user);
   }
 
+  @Delete(':id/remove-degree-course/:degreeCourseId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  removeDegreeCourse(
+    @Param('id') id: string,
+    @Param('degreeCourseId') degreeCourseId: string,
+    @User() user: UserRequest,
+  ) {
+    return this.degreeService.removeDegreeCourse(+id, +degreeCourseId, user);
+  }
+
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
