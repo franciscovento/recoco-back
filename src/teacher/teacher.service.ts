@@ -10,9 +10,10 @@ export class TeacherService {
 
   async create(createTeacherDto: CreateTeacherDto, user: UserRequest) {
     try {
+      const normalizedName = createTeacherDto.name.toLowerCase().trim();
       return await this.prisma.teacher.create({
         data: {
-          name: createTeacherDto.name,
+          name: normalizedName,
           last_name: createTeacherDto.last_name,
           created_by: user.sub,
           university_id: createTeacherDto.university_id,

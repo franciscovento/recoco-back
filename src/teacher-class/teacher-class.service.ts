@@ -12,49 +12,123 @@ import { CreateCommentDto } from 'src/comment/dto/create-comment.dto';
 export class TeacherClassService {
   constructor(private prisma: PrismaService) {}
 
-  async create(
-    createTeacherClassDto: CreateTeacherClassDto,
-    user: UserRequest,
-  ) {
-    try {
-      const normalizedName = createTeacherClassDto.course_name
-        .toLowerCase()
-        .trim();
+  // async create(
+  //   createTeacherClassDto: CreateTeacherClassDto,
+  //   user: UserRequest,
+  // ) {
+  //   try {
+  //     const teacherName = createTeacherClassDto.teacher_name
+  //       .toLocaleLowerCase()
+  //       .trim();
+  //     const teacherLastName = createTeacherClassDto.last_name
+  //       .toLocaleLowerCase()
+  //       .trim();
+  //     const normalizedName = createTeacherClassDto.course_name
+  //       .toLowerCase()
+  //       .trim();
 
+  //     const { university_id } = await this.prisma.faculty.findUnique({
+  //       where: {
+  //         id: createTeacherClassDto.faculty_id,
+  //       },
+  //     });
+
+  //     const teacher = await this.prisma.teacher.findFirst({
+  //       where: {
+  //         name: teacherName,
+  //         last_name: teacherLastName,
+  //         university_id,
+  //       },
+  //     });
+
+  //     if (!teacher) {
+  //       const course = await this.prisma.course.create({
+  //         data: {
+  //           name: normalizedName,
+  //           description: createTeacherClassDto.description,
+  //           short_name: createTeacherClassDto.short_name,
+  //           course_code: createTeacherClassDto.course_code,
+  //           faculty_id: createTeacherClassDto.faculty_id,
+  //           created_by: user.sub,
+  //           courseTeacher: {
+  //             create: {
+  //               user: {
+  //                 connect: {
+  //                   id: user.sub,
+  //                 },
+  //               },
+  //               teacher: {
+  //                 create: {
+  //                   name: teacherName,
+  //                   last_name: teacherLastName,
+  //                   created_by: user.sub,
+  //                   university_id,
+  //                 },
+  //               },
+  //             },
+  //           },
+  //         },
+  //       });
+  //       return course;
+  //     }
+  //   } catch (error) {
+  //     if (error.code === 'P2002') {
+  //       throw new NotAcceptableException({
+  //         message: 'Some of the data provided already exist in db',
+  //         error: error.meta.target,
+  //       });
+  //     }
+  //     throw error;
+  //   }
+  // }
+
+  async create(teacherClassDto: CreateTeacherClassDto, user: UserRequest) {
+    try {
+      const teacherName = teacherClassDto.teacher_name
+        .toLocaleLowerCase()
+        .trim();
+      const teacherLastName = teacherClassDto.last_name
+        .toLocaleLowerCase()
+        .trim();
       const { university_id } = await this.prisma.faculty.findUnique({
         where: {
-          id: createTeacherClassDto.faculty_id,
+          id: teacherClassDto.faculty_id,
         },
       });
 
-      const course = await this.prisma.course.create({
-        data: {
-          name: normalizedName,
-          description: createTeacherClassDto.description,
-          short_name: createTeacherClassDto.short_name,
-          course_code: createTeacherClassDto.course_code,
-          faculty_id: createTeacherClassDto.faculty_id,
-          created_by: user.sub,
-          courseTeacher: {
-            create: {
-              user: {
-                connect: {
-                  id: user.sub,
-                },
-              },
-              teacher: {
-                create: {
-                  name: createTeacherClassDto.teacher_name,
-                  last_name: createTeacherClassDto.last_name,
-                  created_by: user.sub,
-                  university_id,
-                },
+      const teacher = await this.prisma.teacher.findFirst({
+        where: {
+          name: teacherName,
+          last_name: teacherLastName,
+          university_id,
+        },
+      });
+
+      if (!teacher) {
+        return await this.prisma.teacher.create({
+          data: {
+            name: teacherName,
+            last_name: teacherLastName,
+            created_by: user.sub,
+            university_id,
+            courseTeacher: {
+              create: {
+                teacher_class_name: teacherClassDto.teacher_class_name,
+                created_by: user.sub,
+                course_id: teacherClassDto.course_id,
               },
             },
           },
+        });
+      }
+      return await this.prisma.courseTeacher.create({
+        data: {
+          course_id: teacherClassDto.course_id,
+          teacher_class_name: teacherClassDto.teacher_class_name,
+          teacher_id: teacher.id,
+          created_by: user.sub,
         },
       });
-      return course;
     } catch (error) {
       if (error.code === 'P2002') {
         throw new NotAcceptableException({
@@ -91,6 +165,11 @@ export class TeacherClassService {
           user: {
             select: {
               username: true,
+            },
+          },
+          _count: {
+            select: {
+              comments: true,
             },
           },
         },

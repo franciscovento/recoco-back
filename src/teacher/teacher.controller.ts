@@ -52,7 +52,7 @@ export class TeacherController {
     return this.teacherService.update(+id, updateTeacherDto, user);
   }
 
-  @Delete(':+')
+  @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   remove(@Param('id') id: string, @User() user: UserRequest) {
