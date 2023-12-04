@@ -269,12 +269,6 @@ export class TeacherClassService {
           },
         },
       });
-      const hasComments = await this.prisma.comment.findFirst({
-        where: {
-          course_id,
-          teacher_id,
-        },
-      });
 
       if (!courseTeacher) {
         throw new NotFoundException('Teacher class not found');
@@ -285,16 +279,7 @@ export class TeacherClassService {
         );
       }
 
-      if (hasComments && user.rol === 'normal') {
-        throw new NotAcceptableException(
-          'This teacher class has comments, you dont have enough permissions to delete it',
-        );
-      }
-
-      return await this.prisma.courseTeacher.update({
-        data: {
-          status: 'deleted',
-        },
+      return await this.prisma.courseTeacher.delete({
         where: {
           course_id_teacher_id: {
             course_id,
