@@ -229,6 +229,9 @@ export class TeacherClassService {
             },
           },
         },
+        orderBy: {
+          created_at: 'desc',
+        },
       });
       return comments;
     } catch (error) {
