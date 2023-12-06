@@ -1,14 +1,236 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Country {
+  id           Int          @id @default(autoincrement())
+  name         String       @unique
+  universities University[]
+}
+
+model User {
+  id                 String              @id @unique @default(uuid())
+  email              String              @unique
+  password           String
+  username           String              @unique
+  rol                Rol                 @default(normal)
+  status             UserStatus          @default(active)
+  is_verified        Boolean             @default(false)
+  university_id      String?
+  degree_id          String?
+  profile_img        String?
+  reset_token        String?             @unique
+  created_at         DateTime            @default(now())
+  updated_at         DateTime            @updatedAt
+  commends           Comment[]
+  commentLikes       CommentLikes[]
+  course             Course[]
+  courseTeacher      CourseTeacher[]
+  degree             Degree[]
+  degreeComent       DegreeComent[]
+  degreeeCourse      DegreeCourse[]
+  faculty            Faculty[]
+  facultyComments    FacultyComment[]
+  teacher            Teacher[]
+  university         University[]
+  universityComments UniversityComment[]
+}
+
+model University {
+  id                 Int                 @id @unique @default(autoincrement())
+  name               String
+  country_id         Int
+  website            String?
+  phone              String?
+  slug               String?             @unique
+  status             Status?             @default(active)
+  created_by         String
+  created_at         DateTime            @default(now())
+  updated_at         DateTime            @updatedAt
+  faculties          Faculty[]
+  teachers           Teacher[]
+  country            Country             @relation(fields: [country_id], references: [id])
+  user               User                @relation(fields: [created_by], references: [id])
+  universityComments UniversityComment[]
+
+  @@unique([name, country_id], map: "unique_university_by_country")
+}
+
+model Faculty {
+  id              Int              @id @unique @default(autoincrement())
+  name            String
+  status          Status?          @default(active)
+  slug            String?          @unique
+  university_id   Int
+  created_by      String
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @updatedAt
+  course          Course[]
+  degrees         Degree[]
+  user            User             @relation(fields: [created_by], references: [id])
+  university      University       @relation(fields: [university_id], references: [id])
+  facultyComments FacultyComment[]
+
+  @@unique([name, university_id], map: "unique_faculty_by_university")
+}
+
+model Degree {
+  id            Int            @id @unique @default(autoincrement())
+  name          String
+  description   String?
+  slug          String?        @unique
+  duration      Decimal?
+  status        Status?        @default(active)
+  faculty_id    Int
+  created_by    String
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
+  user          User           @relation(fields: [created_by], references: [id])
+  faculty       Faculty        @relation(fields: [faculty_id], references: [id])
+  degreeComent  DegreeComent[]
+  degreeCourses DegreeCourse[]
+
+  @@unique([name, faculty_id], map: "unique_degree_by_faculty")
+}
+
+model Teacher {
+  id            Int             @id @unique @default(autoincrement())
+  name          String
+  last_name     String
+  score         Int?
+  university_id Int
+  status        Status?         @default(active)
+  created_by    String
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @updatedAt
+  courseTeacher CourseTeacher[]
+  user          User            @relation(fields: [created_by], references: [id])
+  university    University      @relation(fields: [university_id], references: [id])
+
+  @@unique([name, last_name, university_id], map: "unique_teacher_by_university")
+}
+
+model Course {
+  id            Int             @id @unique @default(autoincrement())
+  name          String
+  description   String?
+  short_name    String
+  course_code   String?
+  faculty_id    Int
+  status        Status?         @default(active)
+  created_by    String
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @updatedAt
+  user          User            @relation(fields: [created_by], references: [id])
+  faculty       Faculty         @relation(fields: [faculty_id], references: [id])
+  courseTeacher CourseTeacher[]
+  degreeCourses DegreeCourse[]
+
+  @@unique([name, faculty_id], map: "unique_course_by_faculty")
+}
+
+model Comment {
+  comment       String
+  difficulty    Int
+  quality       Int
+  likes         Int?           @default(0)
+  disLikes      Int?           @default(0)
+  status        CommentStatus  @default(approved)
+  course_id     Int
+  teacher_id    Int
+  created_by    String
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
+  courseTeacher CourseTeacher  @relation(fields: [course_id, teacher_id], references: [course_id, teacher_id])
+  user          User           @relation(fields: [created_by], references: [id])
+  commentLikes  CommentLikes[]
+
+  @@id([course_id, teacher_id, created_by])
+}
+
+model CommentLikes {
+  course_id  Int
+  teacher_id Int
+  user_id    String
+  created_by String
+  is_like    Boolean
+  comment    Comment @relation(fields: [course_id, teacher_id, user_id], references: [course_id, teacher_id, created_by])
+  user       User    @relation(fields: [created_by], references: [id])
+
+  @@id([course_id, teacher_id, user_id, created_by])
+}
+
+model DegreeCourse {
+  degree_id  Int
+  course_id  Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  created_by String
+  course     Course   @relation(fields: [course_id], references: [id])
+  user       User     @relation(fields: [created_by], references: [id])
+  degree     Degree   @relation(fields: [degree_id], references: [id])
+
+  @@id([degree_id, course_id])
+}
+
+model CourseTeacher {
+  course_id          Int
+  quality            Decimal?
+  difficulty         Decimal?
+  status             Status    @default(active)
+  created_by         String
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+  teacher_class_name String?
+  teacher_id         Int
+  comments           Comment[]
+  course             Course    @relation(fields: [course_id], references: [id])
+  user               User      @relation(fields: [created_by], references: [id])
+  teacher            Teacher   @relation(fields: [teacher_id], references: [id])
+
+  @@id([course_id, teacher_id])
+}
+
+model UniversityComment {
+  user_id       String
+  university_id Int
+  comment       String
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @updatedAt
+  university    University @relation(fields: [university_id], references: [id])
+  user          User       @relation(fields: [user_id], references: [id])
+
+  @@id([user_id, university_id])
+}
+
+model FacultyComment {
+  user_id    String
+  faculty_id Int
+  comment    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  faculty    Faculty  @relation(fields: [faculty_id], references: [id])
+  user       User     @relation(fields: [user_id], references: [id])
+
+  @@id([user_id, faculty_id])
+}
+
+model DegreeComent {
+  user_id    String
+  degree_id  Int
+  comment    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  degree     Degree   @relation(fields: [degree_id], references: [id])
+  user       User     @relation(fields: [user_id], references: [id])
+
+  @@id([user_id, degree_id])
 }
 
 enum Rol {
@@ -38,218 +260,3 @@ enum CommentStatus {
   spam
   rejected
 }
-
-model Country {
-  id Int @id @default(autoincrement())
-  name String @unique
-  universities University[]
-}
-
-model User {
-  id String @id @unique @default(uuid())
-  email String @unique
-  password String
-  username String @unique
-  rol Rol @default(normal)
-  status UserStatus @default(active)
-  is_verified Boolean @default(false)
-  university_id String?
-  degree_id String? 
-  reset_token String? @unique
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-
-  degreeeCourse DegreeCourse[]
-  commends Comment[]
-  courseTeacher CourseTeacher[]
-  university University[]
-  faculty Faculty[]
-  degree Degree[]
-  teacher Teacher[]
-  course Course[]
-  commentLikes CommentLikes[]
-  universityComments UniversityComment[]
-  facultyComments FacultyComment[]
-  degreeComent DegreeComent[]
-}
-
-model University {
-  id Int @id @unique @default(autoincrement()) 
-  name String 
-  country_id Int
-  website String?
-  phone String?
-  slug String? @unique 
-  status Status? @default(active)
-  created_by String
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-
-  user User @relation(fields: [created_by], references: [id])
-  country Country @relation(fields: [country_id], references: [id])
-  faculties Faculty[]
-  universityComments UniversityComment[]
-  teachers Teacher[]
-
-}
-
-model Faculty {
-  id Int @id @unique @default(autoincrement()) 
-  name String 
-  status Status? @default(active)
-  slug String? @unique 
-  university_id Int
-  created_by String
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-  university University @relation(fields: [university_id], references: [id])
-  user User @relation(fields: [created_by], references: [id])
-  degrees Degree[]
-  course Course[]
-  facultyComments FacultyComment[]
-}
-
-model Degree {
-  id Int @id @unique @default(autoincrement()) 
-  name String
-  description String?
-  slug String? @unique 
-  duration Decimal?
-  status Status? @default(active)
-  faculty_id Int
-  created_by String
-  degreeCourses DegreeCourse[]
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-  user User @relation(fields: [created_by], references: [id])
-  faculty Faculty @relation(fields: [faculty_id], references: [id])
-  degreeComent DegreeComent[]
-
-}
-
- model Teacher {
-  id Int @id @unique @default(autoincrement()) 
-  name String
-  last_name String
-  score Int?
-  university_id Int
-  status Status? @default(active)
-  created_by String
-  courseTeacher CourseTeacher[]
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-  user User @relation(fields: [created_by], references: [id])
-  university University @relation(fields: [university_id], references: [id])
- }
-
- model Course {
-  id Int @id @unique @default(autoincrement()) 
-  name String
-  description String? 
-  short_name String?
-  course_code String?
-  faculty_id Int
-  status Status? @default(active)
-  created_by String
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-
-  faculty Faculty @relation(fields: [faculty_id], references: [id])
-  degreeCourses DegreeCourse[]
-  courseTeacher CourseTeacher[]
-  user User @relation(fields: [created_by], references: [id])
-
- }
-
- model Comment { 
-  comment String
-  difficulty Int
-  quality Int
-  likes Int? @default(0)
-  disLikes Int? @default(0)
-  status CommentStatus @default(approved)
-  course_id Int
-  teacher_id Int
-  created_by String 
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-  commentLikes CommentLikes [] 
-  courseTeacher CourseTeacher @relation(fields: [course_id, teacher_id], references: [course_id, teacher_id])
-  user User @relation(fields: [created_by], references: [id])
-  @@id([course_id, teacher_id, created_by])
-  
- }
-
-
- model CommentLikes {
-  course_id Int
-  teacher_id Int
-  user_id String
-  created_by String
-  is_like Boolean
-  comment Comment @relation(fields: [course_id, teacher_id, user_id], references: [course_id, teacher_id, created_by]) 
-  user User @relation(fields: [created_by], references: [id])
-   @@id([course_id, teacher_id, user_id, created_by])
- }
-
- model DegreeCourse {
-  degree_id Int 
-  course_id Int 
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-  created_by String
-  degree  Degree @relation(fields: [degree_id], references: [id])
-  course  Course @relation(fields: [course_id], references: [id])
-  user User @relation(fields: [created_by], references: [id])
-  @@id([degree_id, course_id])
- }
-
- model CourseTeacher {
-  course_id Int 
-  teacher_id Int 
-  teacher_class_name String?
-  quality Decimal?
-  difficulty Decimal? 
-  status Status @default(active)
-  created_by String
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-  course Course @relation(fields: [course_id], references: [id])
-  teacher Teacher @relation(fields: [teacher_id], references: [id])
-  user User @relation(fields: [created_by], references: [id])
-  @@id([course_id, teacher_id])
-  comments Comment[]
- }
-
- model UniversityComment {
-  user_id String
-  university_id Int
-  comment String
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-  user User @relation(fields: [user_id], references: [id])
-  university University @relation(fields: [university_id], references: [id])
-  @@id([user_id, university_id])
- }
-
- model FacultyComment {
-  user_id String
-  faculty_id Int
-  comment String
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-  user User @relation(fields: [user_id], references: [id])
-  faculty Faculty @relation(fields: [faculty_id], references: [id])
-  @@id([user_id, faculty_id])
- }
-
- model DegreeComent {
-  user_id String
-  degree_id Int
-  comment String
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-  user User @relation(fields: [user_id], references: [id])
-  degree Degree @relation(fields: [degree_id], references: [id])
-  @@id([user_id, degree_id])
- }

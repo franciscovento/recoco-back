@@ -208,13 +208,26 @@ export class TeacherClassService {
     }
   }
 
-  async findComments(teacher_id: number, course_id: number) {
+  async findComments(teacher_id: number, course_id: number, user: UserRequest) {
     try {
       const comments = await this.prisma.comment.findMany({
         where: {
           course_id,
           teacher_id,
           status: 'approved',
+        },
+        include: {
+          user: {
+            select: {
+              username: true,
+              profile_img: true,
+            },
+          },
+          commentLikes: {
+            where: {
+              created_by: user?.sub || '',
+            },
+          },
         },
       });
       return comments;

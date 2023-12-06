@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { TeacherClassService } from './teacher-class.service';
 import { CreateTeacherClassDto } from './dto/create-teacher-class.dto';
@@ -16,6 +17,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/common/decorators/user.decorator';
 import { UserRequest } from 'src/common/interfaces/userRequest.interface';
 import { CreateCommentDto } from 'src/comment/dto/create-comment.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('teacher-class')
 @ApiTags('teacher-class')
@@ -46,11 +48,13 @@ export class TeacherClassController {
   }
 
   @Get(':teacher_id/:course_id/comments')
+  @UseGuards(AuthGuard(['jwt', 'anonymous']))
   findComments(
     @Param('teacher_id') teacher_id: string,
     @Param('course_id') course_id: string,
+    @User() user: UserRequest,
   ) {
-    return this.teacherClassService.findComments(+teacher_id, +course_id);
+    return this.teacherClassService.findComments(+teacher_id, +course_id, user);
   }
 
   @Post(':teacher_id/:course_id/add-comment')

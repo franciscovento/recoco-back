@@ -141,8 +141,8 @@ export class CommentService {
         },
       });
 
-      if (like) {
-        return await this.prisma.commentLikes.delete({
+      if (like && like.is_like) {
+        await this.prisma.commentLikes.delete({
           where: {
             course_id_teacher_id_user_id_created_by: {
               course_id,
@@ -152,8 +152,32 @@ export class CommentService {
             },
           },
         });
+        return {
+          message: 'Like removed',
+          like: false,
+        };
       }
-      return await this.prisma.commentLikes.create({
+
+      if (like && !like.is_like) {
+        await this.prisma.commentLikes.update({
+          where: {
+            course_id_teacher_id_user_id_created_by: {
+              course_id,
+              teacher_id,
+              user_id,
+              created_by: user.sub,
+            },
+          },
+          data: {
+            is_like: true,
+          },
+        });
+        return {
+          message: 'Like updated',
+          like: true,
+        };
+      }
+      await this.prisma.commentLikes.create({
         data: {
           course_id,
           teacher_id,
@@ -162,6 +186,10 @@ export class CommentService {
           is_like: true,
         },
       });
+      return {
+        message: 'Like added',
+        like: true,
+      };
     } catch (error) {
       throw error;
     }
@@ -185,8 +213,8 @@ export class CommentService {
         },
       });
 
-      if (like) {
-        return await this.prisma.commentLikes.delete({
+      if (like && !like.is_like) {
+        await this.prisma.commentLikes.delete({
           where: {
             course_id_teacher_id_user_id_created_by: {
               course_id,
@@ -196,8 +224,32 @@ export class CommentService {
             },
           },
         });
+        return {
+          message: 'Dislike removed',
+          dislike: false,
+        };
       }
-      return await this.prisma.commentLikes.create({
+
+      if (like && like.is_like) {
+        await this.prisma.commentLikes.update({
+          where: {
+            course_id_teacher_id_user_id_created_by: {
+              course_id,
+              teacher_id,
+              user_id,
+              created_by: user.sub,
+            },
+          },
+          data: {
+            is_like: false,
+          },
+        });
+        return {
+          message: 'Dislike updated',
+          dislike: true,
+        };
+      }
+      await this.prisma.commentLikes.create({
         data: {
           course_id,
           teacher_id,
@@ -206,6 +258,10 @@ export class CommentService {
           is_like: false,
         },
       });
+      return {
+        message: 'Dislike added',
+        dislike: true,
+      };
     } catch (error) {
       throw error;
     }

@@ -75,7 +75,12 @@ export class CommentController {
     @Param('user_id') user_id: string,
     @User() user: UserRequest,
   ) {
-    this.commentService.likeComment(+teacher_id, +course_id, user_id, user);
+    return this.commentService.likeComment(
+      +teacher_id,
+      +course_id,
+      user_id,
+      user,
+    );
   }
 
   @Post(':teacher_id/:course_id/:user_id/dislike')
@@ -87,6 +92,11 @@ export class CommentController {
     @Param('user_id') user_id: string,
     @User() user: UserRequest,
   ) {
-    this.commentService.dislikeComment(+teacher_id, +course_id, user_id, user);
+    return this.commentService.dislikeComment(
+      +teacher_id,
+      +course_id,
+      user_id,
+      user,
+    );
   }
 }
