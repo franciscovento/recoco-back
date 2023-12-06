@@ -70,7 +70,12 @@ export class AuthService {
   }
 
   async logout(res: Response) {
-    res.clearCookie('auth_token');
+    res.clearCookie('auth_token', {
+      httpOnly: true,
+      expires: new Date(0),
+      sameSite: 'none',
+      secure: true,
+    });
     return res.json({
       message: 'Logout success',
     });
