@@ -11,10 +11,20 @@ import { DegreeModule } from './degree/degree.module';
 import { CourseModule } from './course/course.module';
 import { CommentModule } from './comment/comment.module';
 import { TeacherClassModule } from './teacher-class/teacher-class.module';
+import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
+    MailerModule.forRoot({
+      transport: {
+        host: process.env.EMAIL_HOST,
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.SENDGRID_API_KEY,
+        },
+      },
+    }),
     PrismaModule,
     UserModule,
     AuthModule,

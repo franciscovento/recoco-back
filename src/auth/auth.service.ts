@@ -12,10 +12,18 @@ import { LoginDto } from './dto/login.dto';
 import { UserRequest } from 'src/common/interfaces/userRequest.interface';
 import { ChanguePasswordDto } from './dto/changue-password.dto';
 import { Response } from 'express';
+import { MailerService } from '@nestjs-modules/mailer';
+import { HttpService } from '@nestjs/axios';
+import { catchError, firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService, private jwtService: JwtService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwtService: JwtService,
+    private mailerService: MailerService,
+    private readonly httpService: HttpService,
+  ) {}
 
   async signup(createAuthDto: SignupDto) {
     try {
@@ -143,12 +151,41 @@ export class AuthService {
         },
       });
 
-      //TODO: Send email with token
+      await this.httpService.axiosRef.post(
+        'https://api.sendgrid.com/v3/mail/send',
+        {
+          from: {
+            email: process.env.SENDGRID_FROM_EMAIL,
+          },
+          personalizations: [
+            {
+              to: [
+                {
+                  email: email,
+                },
+              ],
+              dynamic_template_data: {
+                username: user.username,
+                email: user.email,
+                reset_link: `${process.env.FRONTEND_URL}/auth/reset-password/${token}`,
+              },
+            },
+          ],
+          template_id: process.env.SENDGRID_RESET_PASSWORD_TEMPLATE,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`,
+          },
+        },
+      );
 
       return {
         message: 'Reset password request',
       };
     } catch (error) {
+      console.log(error);
+
       throw error;
     }
   }
@@ -166,7 +203,6 @@ export class AuthService {
       }
 
       const decoded = this.jwtService.verify(code);
-      console.log(decoded);
 
       if (decoded.exp < Date.now() / 1000) {
         throw new UnauthorizedException('Token expired');

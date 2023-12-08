@@ -5,6 +5,7 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { JwtStrategy } from './jwt.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { AnonymousStrategy } from './anonymous.strategy';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   controllers: [AuthController],
@@ -15,6 +16,7 @@ import { AnonymousStrategy } from './anonymous.strategy';
       secret: process.env.JWT_SECRET_KEY,
       signOptions: { expiresIn: '7d' },
     }),
+    HttpModule,
   ],
 })
 export class AuthModule {}
