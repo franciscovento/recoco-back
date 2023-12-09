@@ -12,16 +12,13 @@ import { LoginDto } from './dto/login.dto';
 import { UserRequest } from 'src/common/interfaces/userRequest.interface';
 import { ChanguePasswordDto } from './dto/changue-password.dto';
 import { Response } from 'express';
-import { MailerService } from '@nestjs-modules/mailer';
 import { HttpService } from '@nestjs/axios';
-import { catchError, firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-    private mailerService: MailerService,
     private readonly httpService: HttpService,
   ) {}
 
