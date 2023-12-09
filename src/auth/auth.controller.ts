@@ -59,7 +59,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Set new password' })
   resetPassword(
     @Body('password') password: string,
-    @Query('code') code: string,
+    @Body('code') code: string,
   ) {
     return this.authService.resetPassword(code, password);
   }

@@ -164,7 +164,7 @@ export class AuthService {
               dynamic_template_data: {
                 username: user.username,
                 email: user.email,
-                reset_link: `${process.env.FRONTEND_URL}/auth/reset-password/${token}`,
+                reset_link: `${process.env.FRONTEND_URL}/auth/reset-password?code=${token}`,
               },
             },
           ],
@@ -178,12 +178,11 @@ export class AuthService {
       );
 
       return {
+        success: true,
         message: 'Reset password request',
       };
     } catch (error) {
-      console.log(error);
-
-      throw error;
+      throw new NotFoundException(`User whit email ${email} not found`);
     }
   }
 
