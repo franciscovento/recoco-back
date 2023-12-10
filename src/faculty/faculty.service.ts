@@ -28,13 +28,19 @@ export class FacultyService {
           'This faculty already exist in db',
         );
       }
-      return await this.prisma.faculty.create({
+      const facultyCreated = await this.prisma.faculty.create({
         data: {
           ...createFacultyDto,
           name: normalizedName,
           created_by: user.sub,
         },
       });
+      return {
+        message: 'Faculty created',
+        data: {
+          ...facultyCreated,
+        },
+      };
     } catch (error) {
       if (error.code === 'P2003') {
         throw new BadRequestException('This university does not exist in db');
@@ -45,23 +51,32 @@ export class FacultyService {
 
   async findAll() {
     try {
-      return await this.prisma.faculty.findMany({
+      const faculties = await this.prisma.faculty.findMany({
         where: {
           status: 'active',
         },
       });
+      return {
+        message: 'Faculties retrieved',
+        data: faculties,
+      };
     } catch (error) {
       throw error;
     }
   }
   async findAllByUniversity(university_id: number) {
     try {
-      return await this.prisma.faculty.findMany({
+      const facultyByUniversities = await this.prisma.faculty.findMany({
         where: {
           status: 'active',
           university_id: university_id,
         },
       });
+
+      return {
+        message: 'Faculties by university retrieved',
+        data: facultyByUniversities,
+      };
     } catch (error) {
       throw error;
     }
@@ -86,7 +101,10 @@ export class FacultyService {
         throw new NotFoundException('This faculty was deleted');
       }
 
-      return faculty;
+      return {
+        message: 'Faculty retrieved',
+        data: faculty,
+      };
     } catch (error) {
       throw error;
     }
@@ -118,10 +136,16 @@ export class FacultyService {
           'This faculty has degrees, you dont have enough permissions to update it',
         );
       }
-      return await this.prisma.faculty.update({
+      const facultyUpdated = await this.prisma.faculty.update({
         where: { id },
         data: updateFacultyDto,
       });
+      return {
+        message: 'Faculty updated',
+        data: {
+          ...facultyUpdated,
+        },
+      };
     } catch (error) {
       throw error;
     }
@@ -149,10 +173,16 @@ export class FacultyService {
           'This faculty has degrees, you dont have enough permissions to update it',
         );
       }
-      return await this.prisma.faculty.update({
+      const facultyUpdated = await this.prisma.faculty.update({
         where: { id },
         data: { status: 'deleted' },
       });
+      return {
+        message: 'Faculty deleted',
+        data: {
+          ...facultyUpdated,
+        },
+      };
     } catch (error) {
       throw error;
     }

@@ -12,8 +12,8 @@ export class UserService {
   async findAll(user: UserRequest) {
     const users = await this.prisma.user.findMany();
     return {
-      results: users,
-      asked_by: user.username,
+      message: 'Users retrieved',
+      data: users,
     };
   }
 
@@ -23,10 +23,14 @@ export class UserService {
 
   async update(id: string, updateUserDto: UpdateUserDto) {
     try {
-      return await this.prisma.user.update({
+      const userUpdated = await this.prisma.user.update({
         where: { id },
         data: updateUserDto,
       });
+      return {
+        message: 'User updated',
+        data: userUpdated,
+      };
     } catch (error) {
       throw error;
     }

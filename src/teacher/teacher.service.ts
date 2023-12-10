@@ -11,7 +11,7 @@ export class TeacherService {
   async create(createTeacherDto: CreateTeacherDto, user: UserRequest) {
     try {
       const normalizedName = createTeacherDto.name.toLowerCase().trim();
-      return await this.prisma.teacher.create({
+      const teacher = await this.prisma.teacher.create({
         data: {
           name: normalizedName,
           last_name: createTeacherDto.last_name,
@@ -19,6 +19,10 @@ export class TeacherService {
           university_id: createTeacherDto.university_id,
         },
       });
+      return {
+        message: 'Teacher created',
+        data: teacher,
+      };
     } catch (error) {
       throw error;
     }
@@ -26,11 +30,15 @@ export class TeacherService {
 
   async findAll() {
     try {
-      return await this.prisma.teacher.findMany({
+      const teachers = await this.prisma.teacher.findMany({
         where: {
           status: 'active',
         },
       });
+      return {
+        message: 'Teachers retrieved',
+        data: teachers,
+      };
     } catch (error) {
       throw error;
     }
@@ -42,7 +50,10 @@ export class TeacherService {
         where: { id },
       });
       if (!teacher) throw new NotFoundException('Teacher not found');
-      return teacher;
+      return {
+        message: 'Teacher retrieved',
+        data: teacher,
+      };
     } catch (error) {
       throw error;
     }
@@ -58,10 +69,14 @@ export class TeacherService {
       if (!teacher) throw new NotFoundException('Teacher not found');
       if (teacher.created_by !== user.sub)
         throw new NotFoundException('You cannot update this teacher');
-      return await this.prisma.teacher.update({
+      const teacherUpdated = await this.prisma.teacher.update({
         where: { id },
         data: updateTeacherDto,
       });
+      return {
+        message: 'Teacher updated',
+        data: teacherUpdated,
+      };
     } catch (error) {
       throw error;
     }
@@ -73,10 +88,13 @@ export class TeacherService {
       if (!teacher) throw new NotFoundException('Teacher not found');
       if (teacher.created_by !== user.sub)
         throw new NotFoundException('You cannot delete this teacher');
-      return await this.prisma.teacher.update({
+      const teacherDeleted = await this.prisma.teacher.delete({
         where: { id },
-        data: { status: 'deleted' },
       });
+      return {
+        message: 'Teacher deleted',
+        data: teacherDeleted,
+      };
     } catch (error) {
       throw error;
     }
@@ -84,12 +102,16 @@ export class TeacherService {
 
   async findAllComments(id: number, course_id: number) {
     try {
-      return await this.prisma.comment.findMany({
+      const comments = await this.prisma.comment.findMany({
         where: {
           teacher_id: id,
           course_id,
         },
       });
+      return {
+        message: 'Comments retrieved',
+        data: comments,
+      };
     } catch (error) {
       throw error;
     }
@@ -97,7 +119,7 @@ export class TeacherService {
 
   async findAllCourses(teacher_id: number) {
     try {
-      return await this.prisma.courseTeacher.findMany({
+      const courses = await this.prisma.courseTeacher.findMany({
         where: {
           teacher_id,
         },
@@ -110,6 +132,11 @@ export class TeacherService {
           },
         },
       });
+
+      return {
+        message: 'Courses retrieved',
+        data: courses,
+      };
     } catch (error) {
       throw error;
     }
@@ -136,7 +163,10 @@ export class TeacherService {
       if (!course) {
         throw new NotFoundException('Course not found');
       }
-      return course;
+      return {
+        message: 'Course retrieved',
+        data: course,
+      };
     } catch (error) {
       throw error;
     }
@@ -144,13 +174,17 @@ export class TeacherService {
 
   async assignCourse(teacher_id: number, course_id: number, user: UserRequest) {
     try {
-      return await this.prisma.courseTeacher.create({
+      const courseAssigned = await this.prisma.courseTeacher.create({
         data: {
           teacher_id,
           course_id,
           created_by: user.sub,
         },
       });
+      return {
+        message: 'Course assigned',
+        data: courseAssigned,
+      };
     } catch (error) {
       throw error;
     }
@@ -174,10 +208,7 @@ export class TeacherService {
           'You are not allowed to delete this assignment',
         );
       }
-      return await this.prisma.courseTeacher.update({
-        data: {
-          status: 'deleted',
-        },
+      const courseTeacherDeleted = await this.prisma.courseTeacher.delete({
         where: {
           course_id_teacher_id: {
             course_id,
@@ -185,6 +216,10 @@ export class TeacherService {
           },
         },
       });
+      return {
+        message: 'Course deleted',
+        data: courseTeacherDeleted,
+      };
     } catch (error) {
       throw error;
     }
