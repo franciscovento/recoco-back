@@ -45,6 +45,10 @@ export class UniversityController {
   findOne(@Param('id') id: string) {
     return this.universityService.findOne(+id);
   }
+  @Get('by-slug/:slug')
+  findBySlug(@Param('slug') slug: string) {
+    return this.universityService.findOneBySlug(slug);
+  }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)

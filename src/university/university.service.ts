@@ -56,12 +56,10 @@ export class UniversityService {
   async findAll() {
     try {
       const universities = await this.prisma.university.findMany({
-        where: {
-          status: 'active',
-        },
         include: {
           country: true,
         },
+        take: 10,
       });
       return {
         message: 'Universities retrieved',
@@ -82,6 +80,24 @@ export class UniversityService {
       return {
         message: 'Universities by country retrieved',
         data: universities,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findOneBySlug(slug: string) {
+    try {
+      const university = await this.prisma.university.findUnique({
+        where: { slug },
+        include: { country: true },
+      });
+      if (!university) {
+        throw new NotFoundException('This university does not exist in db');
+      }
+      return {
+        message: 'University retrieved',
+        data: university,
       };
     } catch (error) {
       throw error;

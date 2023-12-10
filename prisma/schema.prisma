@@ -49,7 +49,7 @@ model University {
   country_id         Int
   website            String?
   phone              String?
-  slug               String?             @unique
+  slug               String             @unique
   status             Status?             @default(active)
   created_by         String
   created_at         DateTime            @default(now())
