@@ -24,10 +24,11 @@ model User {
   is_verified        Boolean             @default(false)
   university_id      String?
   degree_id          String?
-  profile_img        String?
   reset_token        String?             @unique
+  confirm_token      String?             @unique
   created_at         DateTime            @default(now())
   updated_at         DateTime            @updatedAt
+  profile_img        String?
   commends           Comment[]
   commentLikes       CommentLikes[]
   course             Course[]
@@ -149,7 +150,7 @@ model Comment {
   updated_at    DateTime       @updatedAt
   courseTeacher CourseTeacher  @relation(fields: [course_id, teacher_id], references: [course_id, teacher_id])
   user          User           @relation(fields: [created_by], references: [id])
-  commentLikes  CommentLikes[] 
+  commentLikes  CommentLikes[]
 
   @@id([course_id, teacher_id, created_by])
 }

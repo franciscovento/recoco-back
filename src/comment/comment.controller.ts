@@ -20,7 +20,7 @@ import { User } from 'src/common/decorators/user.decorator';
 @ApiTags('comment')
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
-  // TODO: CHECK TRIGGERS AND COMMENTS CONTROLLERS
+
   @Post(':teacher_id/:course_id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

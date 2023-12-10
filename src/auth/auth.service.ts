@@ -26,9 +26,16 @@ export class AuthService {
     try {
       const { password, ...restData } = createAuthDto;
       const hashedPassword = await bcrypt.hash(password, 10);
-      return await this.prisma.user.create({
+      await this.prisma.user.create({
         data: { ...restData, password: hashedPassword },
       });
+      return {
+        message: 'User created',
+        data: {
+          username: createAuthDto.username,
+          email: createAuthDto.email,
+        },
+      };
     } catch (error) {
       if (error.code === 'P2002') {
         throw new ConflictException('Email or username is already exist');
@@ -66,8 +73,11 @@ export class AuthService {
       }); // 7 días en milisegundos
       const { password: pass, ...restUser } = findUser;
       return res.json({
-        user: restUser,
-        token: token,
+        message: 'Login success',
+        data: {
+          user: restUser,
+          token,
+        },
       });
     } catch (error) {
       throw error;
@@ -178,7 +188,6 @@ export class AuthService {
       );
 
       return {
-        success: true,
         message: 'Reset password request',
       };
     } catch (error) {
@@ -214,6 +223,9 @@ export class AuthService {
           id: user.id,
         },
       });
+      return {
+        message: 'Password changed',
+      };
     } catch (error) {
       throw error;
     }
@@ -226,7 +238,10 @@ export class AuthService {
           id: user.sub,
         },
       });
-      return rest;
+      return {
+        message: 'User found',
+        data: rest,
+      };
     } catch (error) {
       throw error;
     }

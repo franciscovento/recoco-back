@@ -31,13 +31,19 @@ export class UniversityService {
         );
       }
 
-      return await this.prisma.university.create({
+      const university = await this.prisma.university.create({
         data: {
           ...createUniversityDto,
           name: normalizedName,
           created_by: user.sub,
         },
       });
+      return {
+        message: 'University created',
+        data: {
+          ...university,
+        },
+      };
     } catch (error) {
       console.log(error);
       if (error.code === 'P2003') {
@@ -49,7 +55,7 @@ export class UniversityService {
 
   async findAll() {
     try {
-      return await this.prisma.university.findMany({
+      const universities = await this.prisma.university.findMany({
         where: {
           status: 'active',
         },
@@ -57,18 +63,26 @@ export class UniversityService {
           country: true,
         },
       });
+      return {
+        message: 'Universities retrieved',
+        data: universities,
+      };
     } catch (error) {
       throw error;
     }
   }
   async findAllByCountry(country_id: number) {
     try {
-      return await this.prisma.university.findMany({
+      const universities = await this.prisma.university.findMany({
         where: {
           status: 'active',
           country_id: country_id,
         },
       });
+      return {
+        message: 'Universities by country retrieved',
+        data: universities,
+      };
     } catch (error) {
       throw error;
     }
@@ -83,7 +97,10 @@ export class UniversityService {
       if (!university) {
         throw new NotFoundException('This university does not exist in db');
       }
-      return university;
+      return {
+        message: 'University retrieved',
+        data: university,
+      };
     } catch (error) {
       throw error;
     }
@@ -117,10 +134,16 @@ export class UniversityService {
       if (university.created_by !== user.sub) {
         throw new UnauthorizedException('Not enough permissions');
       }
-      return await this.prisma.university.update({
+      const universityUpdated = await this.prisma.university.update({
         where: { id },
         data: updateUniversityDto,
       });
+      return {
+        message: 'University updated',
+        data: {
+          ...universityUpdated,
+        },
+      };
     } catch (error) {
       throw error;
     }
@@ -152,10 +175,15 @@ export class UniversityService {
         );
       }
 
-      return await this.prisma.university.update({
+      const universityDeleted = await this.prisma.university.delete({
         where: { id },
-        data: { status: 'deleted' },
       });
+      return {
+        message: 'University deleted',
+        data: {
+          ...universityDeleted,
+        },
+      };
     } catch (error) {
       throw error;
     }

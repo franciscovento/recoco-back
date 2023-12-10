@@ -28,13 +28,19 @@ export class CourseService {
           'This course already exist in db',
         );
       }
-      return await this.prisma.course.create({
+      const courseCreated = await this.prisma.course.create({
         data: {
           ...createCourseDto,
           name: normalizedName,
           created_by: user.sub,
         },
       });
+      return {
+        message: 'Course created',
+        data: {
+          ...courseCreated,
+        },
+      };
     } catch (error) {
       throw error;
     }
@@ -54,16 +60,25 @@ export class CourseService {
       });
 
       if (courseExist) {
-        return await this.prisma.degreeCourse.create({
+        const degreeCourse = await this.prisma.degreeCourse.create({
           data: {
             course_id: courseExist.id,
             degree_id: createCourseDegree.degree_id,
             created_by: user.sub,
           },
         });
+        return {
+          message: 'Course created',
+          data: {
+            ...courseExist,
+            degreeCourses: {
+              create: degreeCourse,
+            },
+          },
+        };
       }
 
-      return await this.prisma.course.create({
+      const courseCreated = await this.prisma.course.create({
         data: {
           name: normalizedName,
           faculty_id: createCourseDegree.faculty_id,
@@ -78,18 +93,33 @@ export class CourseService {
           },
         },
       });
+      return {
+        message: 'Course created',
+        data: {
+          ...courseCreated,
+        },
+      };
     } catch (error) {
+      if (error.code === 'P2002') {
+        throw new UnprocessableEntityException(
+          'This course already exist in db',
+        );
+      }
       throw error;
     }
   }
 
   async findAll() {
     try {
-      return await this.prisma.course.findMany({
+      const courses = await this.prisma.course.findMany({
         where: {
           status: 'active',
         },
       });
+      return {
+        message: 'Courses retrieved',
+        data: courses,
+      };
     } catch (error) {
       throw error;
     }
@@ -97,7 +127,7 @@ export class CourseService {
 
   async findAllProfessorship(degree_id: number) {
     try {
-      return await this.prisma.degreeCourse.findMany({
+      const degreeCourses = await this.prisma.degreeCourse.findMany({
         where: {
           degree_id,
         },
@@ -129,6 +159,10 @@ export class CourseService {
           },
         },
       });
+      return {
+        message: 'Courses retrieved',
+        data: degreeCourses,
+      };
     } catch (error) {
       throw error;
     }
@@ -140,7 +174,10 @@ export class CourseService {
       if (!course) {
         throw new NotFoundException('Course not found');
       }
-      return course;
+      return {
+        message: 'Course retrieved',
+        data: course,
+      };
     } catch (error) {
       throw error;
     }
@@ -161,10 +198,14 @@ export class CourseService {
           'You are not allowed to update this course',
         );
       }
-      return await this.prisma.course.update({
+      const courseUpdated = await this.prisma.course.update({
         where: { id },
         data: updateCourseDto,
       });
+      return {
+        message: 'Course updated',
+        data: courseUpdated,
+      };
     } catch (error) {
       throw error;
     }
@@ -181,12 +222,13 @@ export class CourseService {
           'You are not allowed to delete this course',
         );
       }
-      return await this.prisma.course.update({
+      const courseRemoved = await this.prisma.course.delete({
         where: { id },
-        data: {
-          status: 'deleted',
-        },
       });
+      return {
+        message: 'Course deleted',
+        data: courseRemoved,
+      };
     } catch (error) {
       throw error;
     }
@@ -194,13 +236,17 @@ export class CourseService {
 
   async assignDegree(id: number, degree_id: number, user: UserRequest) {
     try {
-      return await this.prisma.degreeCourse.create({
+      const degreeUpdated = await this.prisma.degreeCourse.create({
         data: {
           course_id: id,
           degree_id: degree_id,
           created_by: user.sub,
         },
       });
+      return {
+        message: 'Degree assigned',
+        data: degreeUpdated,
+      };
     } catch (error) {
       throw error;
     }
@@ -225,7 +271,7 @@ export class CourseService {
           'You are not allowed to delete this assignment',
         );
       }
-      return await this.prisma.degreeCourse.delete({
+      const degreeDeleted = await this.prisma.degreeCourse.delete({
         where: {
           degree_id_course_id: {
             course_id: id,
@@ -233,6 +279,10 @@ export class CourseService {
           },
         },
       });
+      return {
+        message: 'Degree deleted',
+        data: degreeDeleted,
+      };
     } catch (error) {
       throw error;
     }
@@ -240,13 +290,17 @@ export class CourseService {
 
   async assignTeacher(id: number, teacherId: number, user: UserRequest) {
     try {
-      return await this.prisma.courseTeacher.create({
+      const teacherAssigned = await this.prisma.courseTeacher.create({
         data: {
           course_id: id,
           teacher_id: teacherId,
           created_by: user.sub,
         },
       });
+      return {
+        message: 'Teacher assigned',
+        data: teacherAssigned,
+      };
     } catch (error) {
       throw error;
     }
@@ -271,10 +325,7 @@ export class CourseService {
         );
       }
 
-      return await this.prisma.courseTeacher.update({
-        data: {
-          status: 'deleted',
-        },
+      const teacherDeleted = await this.prisma.courseTeacher.delete({
         where: {
           course_id_teacher_id: {
             course_id: id,
@@ -282,6 +333,10 @@ export class CourseService {
           },
         },
       });
+      return {
+        message: 'Teacher deleted',
+        data: teacherDeleted,
+      };
     } catch (error) {
       throw error;
     }

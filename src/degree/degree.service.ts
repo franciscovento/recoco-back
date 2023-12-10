@@ -27,13 +27,19 @@ export class DegreeService {
         );
       }
 
-      return await this.prisma.degree.create({
+      const degreeCreated = await this.prisma.degree.create({
         data: {
           ...createDegreeDto,
           name: normalizedName,
           created_by: user.sub,
         },
       });
+      return {
+        message: 'Degree created',
+        data: {
+          ...degreeCreated,
+        },
+      };
     } catch (error) {
       throw error;
     }
@@ -41,11 +47,15 @@ export class DegreeService {
 
   async findAll() {
     try {
-      return await this.prisma.degree.findMany({
+      const degrees = await this.prisma.degree.findMany({
         where: {
           status: 'active',
         },
       });
+      return {
+        message: 'Degrees retrieved',
+        data: degrees,
+      };
     } catch (error) {
       throw error;
     }
@@ -53,7 +63,7 @@ export class DegreeService {
 
   async findAllCourses(id: number) {
     try {
-      return await this.prisma.degreeCourse.findMany({
+      const degreeCourses = await this.prisma.degreeCourse.findMany({
         where: {
           degree_id: id,
         },
@@ -61,6 +71,10 @@ export class DegreeService {
           course: true,
         },
       });
+      return {
+        message: 'Degree courses retrieved',
+        data: degreeCourses,
+      };
     } catch (error) {
       throw error;
     }
@@ -68,12 +82,16 @@ export class DegreeService {
 
   async findAllByFaculty(facultyId: number) {
     try {
-      return await this.prisma.degree.findMany({
+      const degreeByFaculty = await this.prisma.degree.findMany({
         where: {
           status: 'active',
           faculty_id: facultyId,
         },
       });
+      return {
+        message: 'Degrees retrieved',
+        data: degreeByFaculty,
+      };
     } catch (error) {
       throw error;
     }
@@ -92,7 +110,10 @@ export class DegreeService {
         },
       });
       if (!degree) throw new NotFoundException('Degree not found');
-      return degree;
+      return {
+        message: 'Degree retrieved',
+        data: degree,
+      };
     } catch (error) {
       throw error;
     }
@@ -108,10 +129,16 @@ export class DegreeService {
       if (!degree) throw new NotFoundException('Degree not found');
       if (degree.created_by !== user.sub)
         throw new NotFoundException('You cannot update this degree');
-      return this.prisma.degree.update({
+      const degreeUpdated = this.prisma.degree.update({
         where: { id },
         data: { ...updateDegreeDto },
       });
+      return {
+        message: 'Degree updated',
+        data: {
+          ...degreeUpdated,
+        },
+      };
     } catch (error) {
       throw error;
     }
@@ -130,7 +157,7 @@ export class DegreeService {
       if (!degreeCourse) throw new NotFoundException('Degree course not found');
       if (degreeCourse.created_by !== user.sub)
         throw new NotFoundException('You cannot delete this degree course');
-      return this.prisma.degreeCourse.delete({
+      const degreeCourseDeleted = await this.prisma.degreeCourse.delete({
         where: {
           degree_id_course_id: {
             course_id,
@@ -138,6 +165,12 @@ export class DegreeService {
           },
         },
       });
+      return {
+        message: 'Degree course deleted',
+        data: {
+          ...degreeCourseDeleted,
+        },
+      };
     } catch (error) {
       throw error;
     }
@@ -149,10 +182,16 @@ export class DegreeService {
       if (!degree) throw new NotFoundException('Degree not found');
       if (degree.created_by !== user.sub)
         throw new NotFoundException('You cannot delete this degree');
-      return this.prisma.degree.update({
+      const degreeDeleted = this.prisma.degree.delete({
         where: { id },
-        data: { status: 'deleted' },
       });
+
+      return {
+        message: 'Degree deleted',
+        data: {
+          ...degreeDeleted,
+        },
+      };
     } catch (error) {
       throw error;
     }

@@ -34,7 +34,7 @@ export class CommentService {
         );
       }
 
-      return await this.prisma.comment.create({
+      const commentCreated = await this.prisma.comment.create({
         data: {
           ...createCommentDto,
           teacher_id,
@@ -42,6 +42,12 @@ export class CommentService {
           created_by: user.sub,
         },
       });
+      return {
+        message: 'Comment created',
+        data: {
+          ...commentCreated,
+        },
+      };
     } catch (error) {
       throw error;
     }
@@ -72,7 +78,7 @@ export class CommentService {
         );
       }
 
-      return await this.prisma.comment.update({
+      const commentUpdated = await this.prisma.comment.update({
         where: {
           course_id_teacher_id_created_by: {
             course_id,
@@ -84,6 +90,13 @@ export class CommentService {
           comment: updateCommentDto.comment,
         },
       });
+
+      return {
+        message: 'Comment updated',
+        data: {
+          ...commentUpdated,
+        },
+      };
     } catch (error) {
       throw error;
     }
@@ -109,7 +122,7 @@ export class CommentService {
         );
       }
 
-      return await this.prisma.comment.delete({
+      const commentDeleted = await this.prisma.comment.delete({
         where: {
           course_id_teacher_id_created_by: {
             course_id,
@@ -118,6 +131,12 @@ export class CommentService {
           },
         },
       });
+      return {
+        message: 'Comment deleted',
+        data: {
+          ...commentDeleted,
+        },
+      };
     } catch (error) {
       throw error;
     }
@@ -154,7 +173,9 @@ export class CommentService {
         });
         return {
           message: 'Like removed',
-          like: false,
+          data: {
+            like: false,
+          },
         };
       }
 
@@ -174,7 +195,9 @@ export class CommentService {
         });
         return {
           message: 'Like updated',
-          like: true,
+          data: {
+            like: true,
+          },
         };
       }
       await this.prisma.commentLikes.create({
@@ -188,7 +211,9 @@ export class CommentService {
       });
       return {
         message: 'Like added',
-        like: true,
+        data: {
+          like: true,
+        },
       };
     } catch (error) {
       throw error;
@@ -226,7 +251,9 @@ export class CommentService {
         });
         return {
           message: 'Dislike removed',
-          dislike: false,
+          data: {
+            dislike: false,
+          },
         };
       }
 
@@ -246,7 +273,9 @@ export class CommentService {
         });
         return {
           message: 'Dislike updated',
-          dislike: true,
+          data: {
+            dislike: true,
+          },
         };
       }
       await this.prisma.commentLikes.create({
@@ -260,7 +289,9 @@ export class CommentService {
       });
       return {
         message: 'Dislike added',
-        dislike: true,
+        data: {
+          dislike: true,
+        },
       };
     } catch (error) {
       throw error;

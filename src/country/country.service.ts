@@ -6,6 +6,10 @@ export class CountryService {
   constructor(private prisma: PrismaService) {}
 
   async findAll() {
-    return await this.prisma.country.findMany();
+    const countries = await this.prisma.country.findMany();
+    return {
+      message: 'Countries retrieved',
+      data: countries,
+    };
   }
 }
