@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: recoco_db_docker
+      POSTGRES_USER: recoco_adm
+      POSTGRES_PASSWORD: recocopass
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  nestjs-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '4000:4000'
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgres://recoco_adm:recocopass@postgres:5432/recoco_db_docker
+      env_file: .env.docker
+      NODE_ENV: production
+
+volumes:
+  postgres_data:

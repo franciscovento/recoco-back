@@ -26,6 +26,16 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Description
+
+Recoco Api
+
+### Running the app with docker compose
+
+```bash
+$ docker-compose --env-file .env up --build -d
+```
+
 ## Installation
 
 ```bash
