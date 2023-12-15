@@ -14,7 +14,10 @@ import { TeacherClassModule } from './teacher-class/teacher-class.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
     PrismaModule,
     UserModule,
     AuthModule,

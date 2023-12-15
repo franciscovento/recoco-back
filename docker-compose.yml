@@ -1,29 +1,8 @@
 version: '3.8'
 services:
-  postgres:
-    image: postgres:latest
-    env_file:
-      - .env.docker
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - '54320:5432'
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
   nestjs-app:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - '4000:4000'
-    depends_on:
-      - postgres
-    environment:
-      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      env_file: .env.docker
-      NODE_ENV: production
-volumes:
-  postgres_data:
