@@ -3,15 +3,12 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   UseGuards,
-  Req,
 } from '@nestjs/common';
 import { TeacherClassService } from './teacher-class.service';
 import { CreateTeacherClassDto } from './dto/create-teacher-class.dto';
-import { UpdateTeacherClassDto } from './dto/update-teacher-class.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/common/decorators/user.decorator';

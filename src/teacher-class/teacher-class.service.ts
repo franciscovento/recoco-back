@@ -189,21 +189,21 @@ export class TeacherClassService {
     user: UserRequest,
   ) {
     try {
-      const comment = await this.prisma.comment.findUnique({
-        where: {
-          course_id_teacher_id_created_by: {
-            course_id,
-            teacher_id,
-            created_by: user.sub,
-          },
-        },
-      });
+      // const comment = await this.prisma.comment.findUnique({
+      //   where: {
+      //     course_id_teacher_id_created_by: {
+      //       course_id,
+      //       teacher_id,
+      //       created_by: user.sub,
+      //     },
+      //   },
+      // });
 
-      if (comment) {
-        throw new NotAcceptableException(
-          'Comment already exists, try to update it instead',
-        );
-      }
+      // if (comment) {
+      //   throw new NotAcceptableException(
+      //     'Comment already exists, try to update it instead',
+      //   );
+      // }
 
       const commentCreated = await this.prisma.comment.create({
         data: {

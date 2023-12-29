@@ -38,65 +38,41 @@ export class CommentController {
     );
   }
 
-  @Patch(':teacher_id/:course_id')
+  @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   update(
-    @Param('teacher_id') teacher_id: string,
-    @Param('course_id') course_id: string,
+    @Param('id') id: string,
     @Body() updateCommentDto: UpdateCommentDto,
     @User() user: UserRequest,
   ) {
-    return this.commentService.update(
-      +teacher_id,
-      +course_id,
-      updateCommentDto,
-      user,
-    );
+    return this.commentService.update(id, updateCommentDto, user);
   }
 
-  @Delete(':teacher_id/:course_id')
+  @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  remove(
-    @Param('teacher_id') teacher_id: string,
-    @Param('course_id') course_id: string,
-    @User() user: UserRequest,
-  ) {
-    return this.commentService.remove(+teacher_id, +course_id, user);
+  remove(@Param('id') id: string, @User() user: UserRequest) {
+    return this.commentService.remove(id, user);
   }
 
-  @Post(':teacher_id/:course_id/:user_id/like')
+  @Post(':comment_id/like')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   likesComment(
-    @Param('teacher_id') teacher_id: string,
-    @Param('course_id') course_id: string,
-    @Param('user_id') user_id: string,
+    @Param('comment_id') comment_id: string,
     @User() user: UserRequest,
   ) {
-    return this.commentService.likeComment(
-      +teacher_id,
-      +course_id,
-      user_id,
-      user,
-    );
+    return this.commentService.likeComment(comment_id, user);
   }
 
-  @Post(':teacher_id/:course_id/:user_id/dislike')
+  @Post(':comment_id/dislike')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   dislikesComment(
-    @Param('teacher_id') teacher_id: string,
-    @Param('course_id') course_id: string,
-    @Param('user_id') user_id: string,
+    @Param('comment_id') comment_id: string,
     @User() user: UserRequest,
   ) {
-    return this.commentService.dislikeComment(
-      +teacher_id,
-      +course_id,
-      user_id,
-      user,
-    );
+    return this.commentService.dislikeComment(comment_id, user);
   }
 }

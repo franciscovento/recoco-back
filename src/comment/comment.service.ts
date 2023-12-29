@@ -18,21 +18,21 @@ export class CommentService {
     user: UserRequest,
   ) {
     try {
-      const comment = await this.prisma.comment.findUnique({
-        where: {
-          course_id_teacher_id_created_by: {
-            course_id,
-            teacher_id,
-            created_by: user.sub,
-          },
-        },
-      });
+      // const comment = await this.prisma.comment.findUnique({
+      //   where: {
+      //     course_id_teacher_id_created_by: {
+      //       course_id,
+      //       teacher_id,
+      //       created_by: user.sub,
+      //     },
+      //   },
+      // });
 
-      if (comment) {
-        throw new NotAcceptableException(
-          'Comment already exists, try to update it instead',
-        );
-      }
+      // if (comment) {
+      //   throw new NotAcceptableException(
+      //     'Comment already exists, try to update it instead',
+      //   );
+      // }
 
       const commentCreated = await this.prisma.comment.create({
         data: {
@@ -54,19 +54,14 @@ export class CommentService {
   }
 
   async update(
-    teacher_id: number,
-    course_id: number,
+    id: string,
     updateCommentDto: UpdateCommentDto,
     user: UserRequest,
   ) {
     try {
       const comment = await this.prisma.comment.findUnique({
         where: {
-          course_id_teacher_id_created_by: {
-            course_id,
-            teacher_id,
-            created_by: user.sub,
-          },
+          id,
         },
       });
       if (!comment) {
@@ -80,11 +75,7 @@ export class CommentService {
 
       const commentUpdated = await this.prisma.comment.update({
         where: {
-          course_id_teacher_id_created_by: {
-            course_id,
-            teacher_id,
-            created_by: user.sub,
-          },
+          id,
         },
         data: {
           comment: updateCommentDto.comment,
@@ -102,15 +93,11 @@ export class CommentService {
     }
   }
 
-  async remove(teacher_id: number, course_id: number, user: UserRequest) {
+  async remove(id: string, user: UserRequest) {
     try {
       const comment = await this.prisma.comment.findUnique({
         where: {
-          course_id_teacher_id_created_by: {
-            course_id,
-            teacher_id,
-            created_by: user.sub,
-          },
+          id,
         },
       });
       if (!comment) {
@@ -124,11 +111,7 @@ export class CommentService {
 
       const commentDeleted = await this.prisma.comment.delete({
         where: {
-          course_id_teacher_id_created_by: {
-            course_id,
-            teacher_id,
-            created_by: user.sub,
-          },
+          id,
         },
       });
       return {
@@ -142,19 +125,12 @@ export class CommentService {
     }
   }
 
-  async likeComment(
-    teacher_id: number,
-    course_id: number,
-    user_id: string,
-    user: UserRequest,
-  ) {
+  async likeComment(comment_id: string, user: UserRequest) {
     try {
       const like = await this.prisma.commentLikes.findUnique({
         where: {
-          course_id_teacher_id_user_id_created_by: {
-            course_id,
-            teacher_id,
-            user_id,
+          comment_id_created_by: {
+            comment_id,
             created_by: user.sub,
           },
         },
@@ -163,10 +139,8 @@ export class CommentService {
       if (like && like.is_like) {
         await this.prisma.commentLikes.delete({
           where: {
-            course_id_teacher_id_user_id_created_by: {
-              course_id,
-              teacher_id,
-              user_id,
+            comment_id_created_by: {
+              comment_id,
               created_by: user.sub,
             },
           },
@@ -182,10 +156,8 @@ export class CommentService {
       if (like && !like.is_like) {
         await this.prisma.commentLikes.update({
           where: {
-            course_id_teacher_id_user_id_created_by: {
-              course_id,
-              teacher_id,
-              user_id,
+            comment_id_created_by: {
+              comment_id,
               created_by: user.sub,
             },
           },
@@ -202,9 +174,7 @@ export class CommentService {
       }
       await this.prisma.commentLikes.create({
         data: {
-          course_id,
-          teacher_id,
-          user_id,
+          comment_id,
           created_by: user.sub,
           is_like: true,
         },
@@ -220,19 +190,12 @@ export class CommentService {
     }
   }
 
-  async dislikeComment(
-    teacher_id: number,
-    course_id: number,
-    user_id: string,
-    user: UserRequest,
-  ) {
+  async dislikeComment(comment_id: string, user: UserRequest) {
     try {
       const like = await this.prisma.commentLikes.findUnique({
         where: {
-          course_id_teacher_id_user_id_created_by: {
-            course_id,
-            teacher_id,
-            user_id,
+          comment_id_created_by: {
+            comment_id,
             created_by: user.sub,
           },
         },
@@ -241,10 +204,8 @@ export class CommentService {
       if (like && !like.is_like) {
         await this.prisma.commentLikes.delete({
           where: {
-            course_id_teacher_id_user_id_created_by: {
-              course_id,
-              teacher_id,
-              user_id,
+            comment_id_created_by: {
+              comment_id,
               created_by: user.sub,
             },
           },
@@ -260,10 +221,8 @@ export class CommentService {
       if (like && like.is_like) {
         await this.prisma.commentLikes.update({
           where: {
-            course_id_teacher_id_user_id_created_by: {
-              course_id,
-              teacher_id,
-              user_id,
+            comment_id_created_by: {
+              comment_id,
               created_by: user.sub,
             },
           },
@@ -280,9 +239,7 @@ export class CommentService {
       }
       await this.prisma.commentLikes.create({
         data: {
-          course_id,
-          teacher_id,
-          user_id,
+          comment_id,
           created_by: user.sub,
           is_like: false,
         },
