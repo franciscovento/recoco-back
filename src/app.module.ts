@@ -11,7 +11,7 @@ import { DegreeModule } from './degree/degree.module';
 import { CourseModule } from './course/course.module';
 import { CommentModule } from './comment/comment.module';
 import { TeacherClassModule } from './teacher-class/teacher-class.module';
-import { AnonymsModule } from './anonyms/anonyms.module';
+import { AnonymsModule } from './publicapi/anonyms.module';
 
 @Module({
   imports: [
