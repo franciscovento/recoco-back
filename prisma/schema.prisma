@@ -137,6 +137,7 @@ model Course {
 }
 
 model Comment {
+  id            String        @id @unique @default(uuid())
   comment       String
   difficulty    Int
   quality       Int
@@ -152,19 +153,17 @@ model Comment {
   user          User           @relation(fields: [created_by], references: [id])
   commentLikes  CommentLikes[]
 
-  @@id([course_id, teacher_id, created_by])
+  // @@id([course_id, teacher_id, created_by])
 }
 
 model CommentLikes {
-  course_id  Int
-  teacher_id Int
-  user_id    String
+  comment_id String
   created_by String
   is_like    Boolean
-  comment    Comment @relation(fields: [course_id, teacher_id, user_id], references: [course_id, teacher_id, created_by], onDelete: Cascade)
+  comment    Comment @relation(fields: [comment_id], references: [id], onDelete: Cascade)
   user       User    @relation(fields: [created_by], references: [id])
 
-  @@id([course_id, teacher_id, user_id, created_by])
+  @@id([comment_id, created_by])
 }
 
 model DegreeCourse {

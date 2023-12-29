@@ -1,12 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsNotEmpty,
-  IsNumber,
-  IsString,
-  IsUUID,
-  Max,
-  Min,
-} from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
 
 export class CreateCommentDto {
   @IsNotEmpty()
@@ -27,4 +20,14 @@ export class CreateCommentDto {
   @Max(5, { message: 'difficulty must be max  5' })
   @ApiProperty({ default: '3', description: 'quality of the course' })
   quality: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  @ApiProperty({ default: '1', description: 'teacher id' })
+  teacher_id: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  @ApiProperty({ default: '1', description: 'course id' })
+  course_id: number;
 }
