@@ -11,12 +11,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class CommentService {
   constructor(private prisma: PrismaService) {}
-  async create(
-    teacher_id: number,
-    course_id: number,
-    createCommentDto: CreateCommentDto,
-    user: UserRequest,
-  ) {
+  async create(createCommentDto: CreateCommentDto, user: UserRequest) {
     try {
       // const comment = await this.prisma.comment.findUnique({
       //   where: {
@@ -37,8 +32,6 @@ export class CommentService {
       const commentCreated = await this.prisma.comment.create({
         data: {
           ...createCommentDto,
-          teacher_id,
-          course_id,
           created_by: user.sub,
         },
       });

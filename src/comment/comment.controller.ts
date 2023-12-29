@@ -21,21 +21,14 @@ import { User } from 'src/common/decorators/user.decorator';
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
-  @Post(':teacher_id/:course_id')
+  @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   create(
-    @Param('teacher_id') teacher_id: string,
-    @Param('course_id') course_id: string,
     @Body() createCommentDto: CreateCommentDto,
     @User() user: UserRequest,
   ) {
-    return this.commentService.create(
-      +teacher_id,
-      +course_id,
-      createCommentDto,
-      user,
-    );
+    return this.commentService.create(createCommentDto, user);
   }
 
   @Patch(':id')

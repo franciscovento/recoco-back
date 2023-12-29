@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { CommentService } from 'src/comment/comment.service';
 import { CreateCommentDto } from 'src/comment/dto/create-comment.dto';
 import { UserRequest } from 'src/common/interfaces/userRequest.interface';
+import { CourseService } from 'src/course/course.service';
+import { CreateCourseDegree } from 'src/course/dto/create-course-degree';
 import { CreateTeacherClassDto } from 'src/teacher-class/dto/create-teacher-class.dto';
 import { TeacherClassService } from 'src/teacher-class/teacher-class.service';
 
@@ -12,6 +14,7 @@ export class AnonymsService {
   constructor(
     private commentService: CommentService,
     private teacherClass: TeacherClassService,
+    private courseService: CourseService,
   ) {
     this.anonymsUserID = process.env.ANONYMOUS_USER_ID;
     this.user = {
@@ -22,15 +25,9 @@ export class AnonymsService {
     };
   }
 
-  async createComment(
-    teacher_id: number,
-    course_id: number,
-    createCommentDto: CreateCommentDto,
-  ) {
+  async createComment(createCommentDto: CreateCommentDto) {
     try {
       const response = await this.commentService.create(
-        teacher_id,
-        course_id,
         createCommentDto,
         this.user,
       );
@@ -51,6 +48,21 @@ export class AnonymsService {
       );
       return {
         message: 'Teacher class created',
+        data: response,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async createCourseWithDegree(createCourseDegree: CreateCourseDegree) {
+    try {
+      const response = await this.courseService.createWithDegree(
+        createCourseDegree,
+        this.user,
+      );
+      return {
+        message: 'Course created',
         data: response,
       };
     } catch (error) {
