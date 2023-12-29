@@ -1,5 +1,5 @@
 import { Body, Controller, Param, Post, UseGuards } from '@nestjs/common';
-import { AnonymsService } from './Anonyms.service';
+import { AnonymsService } from './anonyms.service';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateCommentDto } from 'src/comment/dto/create-comment.dto';
 import { CreateTeacherClassDto } from 'src/teacher-class/dto/create-teacher-class.dto';
