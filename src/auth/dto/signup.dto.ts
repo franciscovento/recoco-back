@@ -3,6 +3,7 @@ import {
   IsEmail,
   IsNotEmpty,
   IsOptional,
+  IsString,
   IsUUID,
   MaxLength,
   MinLength,
@@ -25,6 +26,11 @@ export class SignupDto {
   @IsNotEmpty()
   @MinLength(6)
   password: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  profile_img: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
