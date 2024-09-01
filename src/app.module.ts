@@ -12,9 +12,16 @@ import { CourseModule } from './course/course.module';
 import { CommentModule } from './comment/comment.module';
 import { TeacherClassModule } from './teacher-class/teacher-class.module';
 import { AnonymsModule } from './publicapi/anonyms.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 50,
+      },
+    ]),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
@@ -31,6 +38,12 @@ import { AnonymsModule } from './publicapi/anonyms.module';
     CommentModule,
     TeacherClassModule,
     AnonymsModule,
+  ],
+  providers: [
+    {
+      provide: 'APP_GUARD',
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

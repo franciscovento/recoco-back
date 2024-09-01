@@ -39,6 +39,14 @@ export class FacultyController {
     return this.facultyService.findAllByUniversity(+university_id);
   }
 
+  @Get('by-university-slug/:slug')
+  findAllByUniversitySlug(
+    @Param('slug')
+    slug: string,
+  ) {
+    return this.facultyService.findAllByUniversitySlug(slug);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.facultyService.findOne(+id);

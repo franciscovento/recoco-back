@@ -82,6 +82,24 @@ export class FacultyService {
     }
   }
 
+  async findAllByUniversitySlug(slug: string) {
+    try {
+      const facultyByUniversities = await this.prisma.faculty.findMany({
+        where: {
+          status: 'active',
+          slug: slug,
+        },
+      });
+
+      return {
+        message: 'Faculties by university retrieved',
+        data: facultyByUniversities,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async findOne(id: number) {
     try {
       const faculty = await this.prisma.faculty.findUnique({

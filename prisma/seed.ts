@@ -5,6 +5,10 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
+  await createCountries();
+}
+
+async function createCountries() {
   const americaCountries = [
     { name: 'Argentina' },
     { name: 'Bolivia' },
