@@ -14,7 +14,7 @@ RUN npm install
 COPY . .
 
 # Copy the .env and .env.development files
-COPY .env.docker ./
+COPY .env ./
 
 # Generate Prisma files
 RUN npx prisma generate
