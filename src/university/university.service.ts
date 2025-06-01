@@ -33,9 +33,19 @@ export class UniversityService {
 
       const university = await this.prisma.university.create({
         data: {
-          ...createUniversityDto,
           name: normalizedName,
-          created_by: user.sub,
+          website: createUniversityDto.website,
+          slug: normalizedName.replace(' ', '-'),
+          country: {
+            connect: {
+              id: createUniversityDto.country_id,
+            },
+          },
+          user: {
+            connect: {
+              id: user.sub,
+            },
+          },
         },
       });
       return {
