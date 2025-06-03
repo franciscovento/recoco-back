@@ -3,6 +3,7 @@ export const corsConfig = {
     origin: [
       'http://localhost:3000',
       'https://development--recoco.netlify.app',
+      'https://recoco.netlify.app',
       'https://recoco.pro',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -11,6 +12,7 @@ export const corsConfig = {
   production: {
     origin: [
       'https://development--recoco.netlify.app',
+      'https://recoco.netlify.app',
       'https://recoco.netlify.app',
       'https://recoco.pro',
     ],
