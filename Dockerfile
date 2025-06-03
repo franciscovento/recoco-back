@@ -4,27 +4,30 @@ FROM node:18-alpine
 # Create app directory
 WORKDIR /usr/src/app
 
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
+# Use .dockerignore to avoid copying node_modules, etc.
+# Set NODE_ENV for production
+ENV NODE_ENV=production
+
+# Copy only necessary files for dependencies install
 COPY package*.json ./
 
-# Install app dependencies
-RUN npm install
+# Install dependencies
+RUN npm ci --omit=dev
 
-# Bundle app source
+# Copy the rest of the app
 COPY . .
 
-# Copy the .env and .env.development files
-COPY .env.docker ./
+# Copy environment file for Docker/Render
+COPY .env.docker .env
 
-# Generate Prisma files
+# Generate Prisma client
 RUN npx prisma generate
 
-# Creates a "dist" folder with the production build
+# Build the app
 RUN npm run build
 
-# Expose the port on which the app will run
+# Expose the app port
 EXPOSE 4000
 
-# Start the server using the production build
-CMD ["sh", "-c", "sleep 10 && npx prisma migrate deploy && npm run start"]
-# CMD ["npm", "run", "start"]
+# Run migrations and start app (Render runs CMD directly)
+CMD npx prisma migrate deploy && npm run start
