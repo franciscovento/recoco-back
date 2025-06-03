@@ -17,9 +17,6 @@ RUN npm ci --omit=dev
 # Copy the rest of the app
 COPY . .
 
-# Copy environment file for Docker/Render
-COPY .env.docker .env
-
 # Generate Prisma client
 RUN npx prisma generate
 
@@ -29,5 +26,5 @@ RUN npm run build
 # Expose the app port
 EXPOSE 4000
 
-# Run migrations and start app (Render runs CMD directly)
-CMD npx prisma migrate deploy && npm run start
+# Start the app (no migration)
+CMD ["npm", "start"]
