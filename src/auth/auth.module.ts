@@ -5,7 +5,6 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { JwtStrategy } from './jwt.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { AnonymousStrategy } from './anonymous.strategy';
-import { HttpModule } from '@nestjs/axios';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
@@ -26,7 +25,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     //   signOptions: { expiresIn: '7d' },
     // }),
     PrismaModule,
-    HttpModule,
   ],
 })
 export class AuthModule {}
