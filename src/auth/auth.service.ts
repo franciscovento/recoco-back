@@ -16,10 +16,7 @@ import { createTransport } from 'nodemailer';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private prisma: PrismaService,
-    private jwtService: JwtService,
-  ) {}
+  constructor(private prisma: PrismaService, private jwtService: JwtService) {}
 
   async signup(createAuthDto: SignupDto) {
     try {
@@ -186,6 +183,13 @@ export class AuthService {
         message: 'Reset password request',
       };
     } catch (error) {
+      console.log(process.env.NODEMAILER_EMAIL);
+      console.log(process.env.NODEMAILER_PASS);
+      console.log(process.env.FRONTEND_URL);
+      console.log('Error sending email:');
+      console.log(error.message);
+
+      console.log(error);
       throw new NotFoundException(`User whit email ${email} not found`);
     }
   }
