@@ -87,7 +87,9 @@ export class FacultyService {
       const facultyByUniversities = await this.prisma.faculty.findMany({
         where: {
           status: 'active',
-          slug: slug,
+          university: {
+            slug,
+          },
         },
       });
 
