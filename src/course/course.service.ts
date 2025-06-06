@@ -9,13 +9,25 @@ import { UserRequest } from 'src/common/interfaces/userRequest.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCourseDegree } from './dto/create-course-degree';
 
+function normalizeName(name: string): string {
+  // Quitar tildes
+  const noAccents = name.normalize('NFD').replace(/\p{Diacritic}/gu, '');
+  // Quitar espacios extra y capitalizar cada palabra
+  return noAccents
+    .trim()
+    .replace(/\s+/g, ' ')
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
 @Injectable()
 export class CourseService {
   constructor(private prisma: PrismaService) {}
 
   async create(createCourseDto: CreateCourseDto, user: UserRequest) {
     try {
-      const normalizedName = createCourseDto.name.toLowerCase().trim();
+      const normalizedName = normalizeName(createCourseDto.name);
       const courseExist = await this.prisma.course.findFirst({
         where: {
           faculty_id: createCourseDto.faculty_id,
@@ -51,7 +63,7 @@ export class CourseService {
     user: UserRequest,
   ) {
     try {
-      const normalizedName = createCourseDegree.name.toLowerCase().trim();
+      const normalizedName = normalizeName(createCourseDegree.name);
       const courseExist = await this.prisma.course.findFirst({
         where: {
           faculty_id: createCourseDegree.faculty_id,
