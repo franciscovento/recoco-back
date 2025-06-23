@@ -289,41 +289,46 @@ export class TeacherClassService {
     course_id: number,
     user?: UserRequest,
   ) {
-    const resources = await this.prisma.resources.findMany({
-      where: {
-        course_id,
-        teacher_id,
-      },
-      include: {
-        // Incluir información de reportes si el usuario está autenticado
-        ...(user?.sub && {
-          resourceReports: {
-            where: {
-              created_by: user.sub,
-            },
-            select: {
-              user: {
+    try {
+      const resources = await this.prisma.resources.findMany({
+        where: {
+          course_id,
+          teacher_id,
+        },
+        include: user?.sub
+          ? {
+              resourceReports: {
+                where: {
+                  created_by: user.sub,
+                },
                 select: {
-                  id: true,
+                  user: {
+                    select: {
+                      id: true,
+                    },
+                  },
                 },
               },
-            },
-          },
-        }),
-      },
-    });
+            }
+          : undefined,
+      });
 
-    const resourcesWithReportInfo = resources.map((resource) => ({
-      ...resource,
-      is_reported_by_user: user?.sub
-        ? resource.resourceReports && resource.resourceReports.length > 0
-        : false,
-      resourceReports: undefined, // Remover el array de reportes del response
-    }));
+      const resourcesWithReportInfo = resources.map((resource) => ({
+        ...resource,
+        is_reported_by_user: user?.sub
+          ? resource.resourceReports && resource.resourceReports.length > 0
+          : false,
+        resourceReports: undefined, // Remover el array de reportes del response
+      }));
 
-    return {
-      message: 'Resources retrieved',
-      data: resourcesWithReportInfo,
-    };
+      return {
+        message: 'Resources retrieved',
+        data: resourcesWithReportInfo,
+      };
+    } catch (error) {
+      console.log(error);
+
+      throw error;
+    }
   }
 }
