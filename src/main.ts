@@ -6,7 +6,7 @@ import { corsConfig } from 'config';
 import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 4000;
   const environment = process.env.NODE_ENV || 'development';
   const app = await NestFactory.create(AppModule);
   app.use(cookieParser());
@@ -21,6 +21,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/v1/docs', app, document);
   console.log(JSON.stringify(corsConfig[environment], null, 2));
+  console.log(process.env.NODE_ENV);
+  console.log(process.env.DATABASE_URL);
 
   app.enableCors(corsConfig[environment]);
   await app.listen(port);

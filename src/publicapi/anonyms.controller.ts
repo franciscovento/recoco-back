@@ -1,9 +1,10 @@
-import { Body, Controller, Param, Post, UseGuards } from '@nestjs/common';
-import { AnonymsService } from './anonyms.service';
+import { Body, Controller, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateCommentDto } from 'src/comment/dto/create-comment.dto';
-import { CreateTeacherClassDto } from 'src/teacher-class/dto/create-teacher-class.dto';
 import { CreateCourseDegree } from 'src/course/dto/create-course-degree';
+import { CreateTeacherClassDto } from 'src/teacher-class/dto/create-teacher-class.dto';
+import { CreateTeacherClassResourceDto } from '../teacher-class/dto/create-techar-class-resource.dto';
+import { AnonymsService } from './anonyms.service';
 
 @Controller('anonyms')
 @ApiTags('anonyms')
@@ -23,5 +24,10 @@ export class AnonymsController {
   @Post('course/with-degree')
   createDegreeCourse(@Body() createDegreeCourseDto: CreateCourseDegree) {
     return this.anonymsService.createCourseWithDegree(createDegreeCourseDto);
+  }
+
+  @Post('teacher-class/resource')
+  createResource(@Body() resourceDto: CreateTeacherClassResourceDto) {
+    return this.anonymsService.createResource(resourceDto);
   }
 }

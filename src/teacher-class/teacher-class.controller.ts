@@ -1,20 +1,22 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Post,
   UseGuards,
 } from '@nestjs/common';
-import { TeacherClassService } from './teacher-class.service';
-import { CreateTeacherClassDto } from './dto/create-teacher-class.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { CreateCommentDto } from 'src/comment/dto/create-comment.dto';
 import { User } from 'src/common/decorators/user.decorator';
 import { UserRequest } from 'src/common/interfaces/userRequest.interface';
-import { CreateCommentDto } from 'src/comment/dto/create-comment.dto';
-import { AuthGuard } from '@nestjs/passport';
+import { OptionalAuthGuard } from '../common/guards/optional-auth.guard';
+import { CreateTeacherClassDto } from './dto/create-teacher-class.dto';
+import { CreateTeacherClassResourceDto } from './dto/create-techar-class-resource.dto';
+import { TeacherClassService } from './teacher-class.service';
 
 @Controller('teacher-class')
 @ApiTags('teacher-class')
@@ -80,5 +82,36 @@ export class TeacherClassController {
     @User() user: UserRequest,
   ) {
     return this.teacherClassService.remove(+teacher_id, +course_id, user);
+  }
+
+  @Get(':teacher_id/:course_id/resources')
+  @UseGuards(OptionalAuthGuard)
+  findResources(
+    @Param('teacher_id') teacher_id: string,
+    @Param('course_id') course_id: string,
+    @User() user: UserRequest,
+  ) {
+    return this.teacherClassService.findResources(
+      +teacher_id,
+      +course_id,
+      user,
+    );
+  }
+
+  @Post(':teacher_id/:course_id/add-resource')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  createResource(
+    @Param('teacher_id') teacher_id: string,
+    @Param('course_id') course_id: string,
+    @Body() resourceDto: CreateTeacherClassResourceDto,
+    @User() user: UserRequest,
+  ) {
+    return this.teacherClassService.createResource(
+      +teacher_id,
+      +course_id,
+      resourceDto,
+      user,
+    );
   }
 }

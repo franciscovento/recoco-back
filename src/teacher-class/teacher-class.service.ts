@@ -3,10 +3,11 @@ import {
   NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateTeacherClassDto } from './dto/create-teacher-class.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { UserRequest } from 'src/common/interfaces/userRequest.interface';
 import { CreateCommentDto } from 'src/comment/dto/create-comment.dto';
+import { UserRequest } from 'src/common/interfaces/userRequest.interface';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateTeacherClassDto } from './dto/create-teacher-class.dto';
+import { CreateTeacherClassResourceDto } from './dto/create-techar-class-resource.dto';
 
 @Injectable()
 export class TeacherClassService {
@@ -257,5 +258,72 @@ export class TeacherClassService {
     } catch (error) {
       throw error;
     }
+  }
+
+  async createResource(
+    teacher_id: number,
+    course_id: number,
+    resourceDto: CreateTeacherClassResourceDto,
+    user: UserRequest,
+  ) {
+    try {
+      const resourceCreated = await this.prisma.resources.create({
+        data: {
+          ...resourceDto,
+          created_by: user.sub,
+          course_id,
+          teacher_id,
+        },
+      });
+      return {
+        message: 'Resource created',
+        data: resourceCreated,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findResources(
+    teacher_id: number,
+    course_id: number,
+    user?: UserRequest,
+  ) {
+    const resources = await this.prisma.resources.findMany({
+      where: {
+        course_id,
+        teacher_id,
+      },
+      include: {
+        // Incluir información de reportes si el usuario está autenticado
+        ...(user?.sub && {
+          resourceReports: {
+            where: {
+              created_by: user.sub,
+            },
+            select: {
+              user: {
+                select: {
+                  id: true,
+                },
+              },
+            },
+          },
+        }),
+      },
+    });
+
+    const resourcesWithReportInfo = resources.map((resource) => ({
+      ...resource,
+      is_reported_by_user: user?.sub
+        ? resource.resourceReports && resource.resourceReports.length > 0
+        : false,
+      resourceReports: undefined, // Remover el array de reportes del response
+    }));
+
+    return {
+      message: 'Resources retrieved',
+      data: resourcesWithReportInfo,
+    };
   }
 }

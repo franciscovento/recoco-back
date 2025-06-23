@@ -34,7 +34,26 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# Enviroment variables
+# Environment variables
 .env
 .env*
 .env.docker
+env.local
+env.production
+env.development
+env.staging
+
+# dotenvx
+.env.keys
+.env.local
+.env.*.local
+
+# Supabase
+supabase/.temp
+supabase/.branches
+supabase/initial-db.sql
+
+
+# DATABASE
+dump.sql
+cloud-dump-full.sql

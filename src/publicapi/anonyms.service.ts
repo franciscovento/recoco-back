@@ -6,6 +6,7 @@ import { CourseService } from 'src/course/course.service';
 import { CreateCourseDegree } from 'src/course/dto/create-course-degree';
 import { CreateTeacherClassDto } from 'src/teacher-class/dto/create-teacher-class.dto';
 import { TeacherClassService } from 'src/teacher-class/teacher-class.service';
+import { CreateTeacherClassResourceDto } from '../teacher-class/dto/create-techar-class-resource.dto';
 
 @Injectable()
 export class AnonymsService {
@@ -63,6 +64,23 @@ export class AnonymsService {
       );
       return {
         message: 'Course created',
+        data: response,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async createResource(resourceDto: CreateTeacherClassResourceDto) {
+    try {
+      const response = await this.teacherClass.createResource(
+        resourceDto.teacher_id,
+        resourceDto.course_id,
+        resourceDto,
+        this.user,
+      );
+      return {
+        message: 'Resource created',
         data: response,
       };
     } catch (error) {

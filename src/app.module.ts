@@ -13,6 +13,7 @@ import { CommentModule } from './comment/comment.module';
 import { TeacherClassModule } from './teacher-class/teacher-class.module';
 import { AnonymsModule } from './publicapi/anonyms.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ResourceModule } from './resource/resource.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
     CommentModule,
     TeacherClassModule,
     AnonymsModule,
+    ResourceModule,
   ],
   providers: [
     {
