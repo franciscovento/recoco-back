@@ -82,10 +82,12 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 
 Nest is [MIT licensed](LICENSE).
 
+## DATABASE
 
+psql -h localhost -p 54322 -U postgres -d postgres < dump.sql  
+npx prisma db seed  
+supabase db dump --file dump.sql
 
-## DATABASE 
+<!-- FOR SUPABASE BUG -->
 
-psql -h localhost -p 54322 -U postgres -d postgres < dump.sql   
-npx prisma db seed                                        
-supabase db dump --file dump.sql 
+rm supabase/.temp/postgres-version

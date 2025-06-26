@@ -50,6 +50,7 @@ export class ResourceService {
   }
 
   async report(resource_id: number, user: UserRequest) {
+    const MAX_REPORTS = 3;
     try {
       const resource = await this.prisma.resources.findUnique({
         where: {
@@ -59,6 +60,8 @@ export class ResourceService {
       if (!resource) {
         throw new NotFoundException('Resource not found');
       }
+
+      // Create new report
       const reportedResource = await this.prisma.resourceReports.create({
         data: {
           resource_id,
@@ -66,9 +69,47 @@ export class ResourceService {
         },
       });
 
+      // Update reports counter
+      const updatedResource = await this.prisma.resources.update({
+        where: {
+          id: resource_id,
+        },
+        data: {
+          reports: {
+            increment: 1,
+          },
+        },
+      });
+
+      // Check if reports >= 3, if so delete the resource and all its reports
+      if (updatedResource.reports >= MAX_REPORTS) {
+        await this.prisma.resourceReports.deleteMany({
+          where: {
+            resource_id: resource_id,
+          },
+        });
+
+        await this.prisma.resources.delete({
+          where: {
+            id: resource_id,
+          },
+        });
+
+        return {
+          message: 'Resource reported and deleted due to excessive reports',
+          data: {
+            resourceDeleted: true,
+            reportsCount: updatedResource.reports,
+          },
+        };
+      }
+
       return {
         message: 'Resource reported',
-        data: reportedResource,
+        data: {
+          report: reportedResource,
+          updatedResource: updatedResource,
+        },
       };
     } catch (error) {
       throw error;
