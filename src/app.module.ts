@@ -1,19 +1,21 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { PrismaModule } from './prisma/prisma.module';
-import { UserModule } from './user/user.module';
-import { AuthModule } from './auth/auth.module';
-import { UniversityModule } from './university/university.module';
-import { CountryModule } from './country/country.module';
-import { FacultyModule } from './faculty/faculty.module';
-import { TeacherModule } from './teacher/teacher.module';
-import { DegreeModule } from './degree/degree.module';
-import { CourseModule } from './course/course.module';
-import { CommentModule } from './comment/comment.module';
-import { TeacherClassModule } from './teacher-class/teacher-class.module';
-import { AnonymsModule } from './publicapi/anonyms.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { AuthModule } from './auth/auth.module';
+import { CommentModule } from './comment/comment.module';
+import { CountryModule } from './country/country.module';
+import { CourseModule } from './course/course.module';
+import { DegreeModule } from './degree/degree.module';
+import { FacultyModule } from './faculty/faculty.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { AnonymsModule } from './publicapi/anonyms.module';
 import { ResourceModule } from './resource/resource.module';
+import { TeacherClassModule } from './teacher-class/teacher-class.module';
+import { TeacherModule } from './teacher/teacher.module';
+import { UniversityModule } from './university/university.module';
+import { UserModule } from './user/user.module';
+import { ChatbotModule } from './chatbot/chatbot.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -40,6 +42,8 @@ import { ResourceModule } from './resource/resource.module';
     TeacherClassModule,
     AnonymsModule,
     ResourceModule,
+    ChatbotModule,
+    RedisModule,
   ],
   providers: [
     {

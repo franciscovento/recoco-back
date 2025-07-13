@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common';
-import { CommentService } from './comment.service';
-import { CommentController } from './comment.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { ChatbotModule } from '../chatbot/chatbot.module';
+import { OpenAIProvider } from '../common/openapi/openapi.provider';
+import { CommentController } from './comment.controller';
+import { CommentService } from './comment.service';
 
 @Module({
   controllers: [CommentController],
-  providers: [CommentService],
-  imports: [PrismaModule],
+  providers: [CommentService, OpenAIProvider],
+  imports: [PrismaModule, ChatbotModule],
   exports: [CommentService],
 })
 export class CommentModule {}

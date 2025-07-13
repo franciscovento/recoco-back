@@ -38,11 +38,11 @@ model User {
   degreeeCourse      DegreeCourse[]
   faculty            Faculty[]
   facultyComments    FacultyComment[]
+  resourceReports    ResourceReports[]
+  resources          Resources[]
   teacher            Teacher[]
   university         University[]
   universityComments UniversityComment[]
-  resources          Resources[]
-  resourceReports    ResourceReports[]
 }
 
 model University {
@@ -140,20 +140,23 @@ model Course {
 
 model Comment {
   comment       String
-  status        CommentStatus  @default(approved)
+  status        CommentStatus          @default(approved)
   created_by    String
-  created_at    DateTime       @default(now())
-  updated_at    DateTime       @updatedAt
+  created_at    DateTime               @default(now())
+  updated_at    DateTime               @updatedAt
   difficulty    Int
   quality       Int
-  disLikes      Int?           @default(0)
-  likes         Int?           @default(0)
+  disLikes      Int?                   @default(0)
+  likes         Int?                   @default(0)
   course_id     Int
   teacher_id    Int
-  id            String         @id @unique @default(uuid())
-  courseTeacher CourseTeacher  @relation(fields: [course_id, teacher_id], references: [course_id, teacher_id])
-  user          User           @relation(fields: [created_by], references: [id])
+  id            String                 @id @unique @default(uuid())
+  embedding     Unsupported("vector")?
+  courseTeacher CourseTeacher          @relation(fields: [course_id, teacher_id], references: [course_id, teacher_id])
+  user          User                   @relation(fields: [created_by], references: [id])
   commentLikes  CommentLikes[]
+
+  @@index([embedding], map: "embedding_idx")
 }
 
 model CommentLikes {
@@ -182,17 +185,17 @@ model DegreeCourse {
 model CourseTeacher {
   quality            Decimal?
   difficulty         Decimal?
-  status             Status    @default(active)
-  created_at         DateTime  @default(now())
-  updated_at         DateTime  @updatedAt
+  status             Status      @default(active)
+  created_at         DateTime    @default(now())
+  updated_at         DateTime    @updatedAt
   created_by         String
   course_id          Int
   teacher_id         Int
   teacher_class_name String?
   comments           Comment[]
-  course             Course    @relation(fields: [course_id], references: [id])
-  user               User      @relation(fields: [created_by], references: [id])
-  teacher            Teacher   @relation(fields: [teacher_id], references: [id])
+  course             Course      @relation(fields: [course_id], references: [id])
+  user               User        @relation(fields: [created_by], references: [id])
+  teacher            Teacher     @relation(fields: [teacher_id], references: [id])
   resources          Resources[]
 
   @@id([course_id, teacher_id])
@@ -235,28 +238,29 @@ model DegreeComent {
 }
 
 model Resources {
-  id         Int      @id @unique @default(autoincrement())
-  name        String
-  url         String
-  category  ResourceCategory  @default(other)
-  created_by String
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-  course_id          Int
-  teacher_id         Int
-  reports            Int? @default(0)
-  courseTeacher CourseTeacher @relation(fields: [course_id, teacher_id ], references: [course_id, teacher_id])
-  user        User     @relation(fields: [created_by], references: [id])
+  id              Int               @id @unique @default(autoincrement())
+  name            String
+  url             String
+  category        ResourceCategory  @default(other)
+  created_by      String
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @updatedAt
+  course_id       Int
+  teacher_id      Int
+  reports         Int?              @default(0)
   resourceReports ResourceReports[]
+  courseTeacher   CourseTeacher     @relation(fields: [course_id, teacher_id], references: [course_id, teacher_id])
+  user            User              @relation(fields: [created_by], references: [id])
 }
 
-model ResourceReports {    @id @unique @default(autoincrement())
+model ResourceReports {
   resource_id Int
-  created_by String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-  resource   Resources @relation(fields: [resource_id], references: [id])
-  user       User      @relation(fields: [created_by], references: [id])
+  created_by  String
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  user        User      @relation(fields: [created_by], references: [id])
+  resource    Resources @relation(fields: [resource_id], references: [id])
+
   @@id([resource_id, created_by])
 }
 
@@ -273,7 +277,6 @@ enum Rol {
   manager
   super_user
 }
-
 
 enum UserStatus {
   active

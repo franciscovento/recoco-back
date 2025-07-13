@@ -1,47 +1,150 @@
-import {
-  Injectable,
-  NotFoundException,
-  NotAcceptableException,
-} from '@nestjs/common';
-import { CreateCommentDto } from './dto/create-comment.dto';
-import { UpdateCommentDto } from './dto/update-comment.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { UserRequest } from 'src/common/interfaces/userRequest.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ChatbotService } from '../chatbot/chatbot.service';
+import { CreateCommentDto } from './dto/create-comment.dto';
+import { UpdateCommentDto } from './dto/update-comment.dto';
 
 @Injectable()
 export class CommentService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly chatbotService: ChatbotService,
+  ) {}
+
+  // async create(createCommentDto: CreateCommentDto, user: UserRequest) {
+  //   try {
+  //     // const comment = await this.prisma.comment.findUnique({
+  //     //   where: {
+  //     //     course_id_teacher_id_created_by: {
+  //     //       course_id,
+  //     //       teacher_id,
+  //     //       created_by: user.sub,
+  //     //     },
+  //     //   },
+  //     // });
+
+  //     // if (comment) {
+  //     //   throw new NotAcceptableException(
+  //     //     'Comment already exists, try to update it instead',
+  //     //   );
+  //     // }
+  //     const teacherName = await this.prisma.teacher.findUnique({
+  //       where: {
+  //         id: createCommentDto.teacher_id,
+  //       },
+  //     });
+
+  //     const courseName = await this.prisma.course.findUnique({
+  //       where: {
+  //         id: createCommentDto.course_id,
+  //       },
+  //     });
+
+  //     const embeddingText = `
+  //       Teacher: ${teacherName?.name}
+  //       Course: ${courseName?.name}
+  //       Comment: ${createCommentDto.comment}
+  //       Difficulty: ${createCommentDto.difficulty}
+  //       Quality: ${createCommentDto.quality}
+  //     `;
+
+  //     const embedding = await this.generateEmbedding(embeddingText);
+
+  //     // OPCIÓN 1: Si usas pgvector (tipo vector)
+  //     const embeddingString = embedding ? `[${embedding.join(',')}]` : null;
+
+  //     const commentCreated = await this.prisma.$queryRaw`
+  //     INSERT INTO "Comment" (
+  //       id,
+  //       teacher_id,
+  //       course_id,
+  //       comment,
+  //       difficulty,
+  //       quality,
+  //       created_by,
+  //       embedding
+  //     )
+  //     VALUES (
+  //       '532e10ea-bd2e-4d8d-8f5c-18882bcd9728',
+  //       ${createCommentDto.teacher_id},
+  //       ${createCommentDto.course_id},
+  //       ${createCommentDto.comment},
+  //       ${createCommentDto.difficulty},
+  //       ${createCommentDto.quality},
+  //       ${user.sub},
+  //       ${embeddingString}::vector
+  //     )
+  //     RETURNING *
+  //   `;
+
+  //     return {
+  //       message: 'Comment created',
+  //       data: {
+  //         ...commentCreated[0], // Para pgvector (queryRaw retorna array)
+  //         // ...commentCreated, // Para JSONB/Float[] (create retorna objeto)
+  //       },
+  //     };
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
+
   async create(createCommentDto: CreateCommentDto, user: UserRequest) {
     try {
-      // const comment = await this.prisma.comment.findUnique({
-      //   where: {
-      //     course_id_teacher_id_created_by: {
-      //       course_id,
-      //       teacher_id,
-      //       created_by: user.sub,
-      //     },
-      //   },
-      // });
+      const teacherName = await this.prisma.teacher.findUnique({
+        where: { id: createCommentDto.teacher_id },
+      });
 
-      // if (comment) {
-      //   throw new NotAcceptableException(
-      //     'Comment already exists, try to update it instead',
-      //   );
-      // }
+      const courseName = await this.prisma.course.findUnique({
+        where: { id: createCommentDto.course_id },
+      });
+
+      const embeddingText = `
+      Profesor: ${teacherName?.name || ''} ${teacherName.last_name || ''}
+      Curso: ${courseName?.name || ''}
+      Comentario: ${createCommentDto.comment}
+      Dificultad: ${createCommentDto.difficulty || 0}
+      Calidad: ${createCommentDto.quality || 0}
+    `;
+
+      console.log('Embedding text:', embeddingText);
+
+      const embedding = await this.chatbotService.generateEmbedding(
+        embeddingText,
+      );
+
+      // Crear sin embedding primero
+      const commentData = {
+        teacher_id: createCommentDto.teacher_id,
+        course_id: createCommentDto.course_id,
+        comment: createCommentDto.comment,
+        difficulty: createCommentDto.difficulty,
+        quality: createCommentDto.quality,
+        created_by: user.sub,
+        // Agregar cualquier otro campo requerido según tu esquema
+      };
 
       const commentCreated = await this.prisma.comment.create({
-        data: {
-          ...createCommentDto,
-          created_by: user.sub,
-        },
+        data: commentData,
       });
+
+      // Actualizar con embedding después
+      if (embedding) {
+        const embeddingString = `[${embedding.join(',')}]`;
+        await this.prisma.$executeRaw`
+        UPDATE "Comment" 
+        SET embedding = ${embeddingString}::vector 
+        WHERE id = ${commentCreated.id}
+      `;
+      }
+
       return {
         message: 'Comment created',
-        data: {
-          ...commentCreated,
-        },
+        data: commentCreated,
       };
     } catch (error) {
+      console.error('Error creating comment:', error);
       throw error;
     }
   }
