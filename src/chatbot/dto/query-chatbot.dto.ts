@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsUUID } from 'class-validator';
+import { IsNumber, IsString, IsUUID } from 'class-validator';
 
 export class QueryChatDto {
   @ApiProperty({
@@ -20,4 +20,13 @@ export class QueryChatDto {
     required: true,
   })
   sessionId: string;
+
+  @IsNumber()
+  @ApiProperty({
+    description: 'Faculty ID to filter the query',
+    example: 1,
+    type: Number,
+    required: true,
+  })
+  facultyId: number;
 }

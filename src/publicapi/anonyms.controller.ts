@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateCommentDto } from 'src/comment/dto/create-comment.dto';
 import { CreateCourseDegree } from 'src/course/dto/create-course-degree';
@@ -37,7 +37,7 @@ export class AnonymsController {
 
   @Post('redis/test')
   async testRedis() {
-    const testKey = 'test-key';
+    const testKey = '25adf253-4dfc-465a-93f0-8e52ac2aa07d';
     const testValue = 'Hello, Redis!';
 
     // Set a value in Redis
@@ -53,9 +53,9 @@ export class AnonymsController {
     };
   }
 
-  @Get('redis/test')
-  async getRedisTest() {
-    const testKey = '398c97b9-8c60-4b9f-a70a-364589f49552';
+  @Get('redis/test/:sessionId')
+  async getRedisTest(@Param('sessionId') sessionId: string) {
+    const testKey = sessionId;
 
     // Get the value from Redis
     const value = await this.redisService.getChatBotHistory(testKey);
@@ -67,11 +67,11 @@ export class AnonymsController {
     };
   }
 
-  @Delete('redis/test')
-  async deleteRedisTest() {
-    const testKey = 'test-key';
+  @Delete('redis/test/:sessionId')
+  async deleteRedisTest(@Param('sessionId') sessionId: string) {
+    const testKey = sessionId;
     // Delete the key from Redis
-    await this.redisService.del(testKey);
+    await this.redisService.del(`chat:${testKey}`);
     return {
       message: 'Redis key deleted successfully',
       key: testKey,

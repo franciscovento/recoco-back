@@ -1,17 +1,26 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotAcceptableException } from '@nestjs/common';
 import OpenAI from 'openai';
 import { ChatCompletionMessageParam } from 'openai/resources/index';
+import { getEncoding } from 'tiktoken-node';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
-import { QueryChatDto } from './dto/query-chatbot.dto';
+import { getRelevantCommentsFunction } from './functions/getRelevantComments';
 
 @Injectable()
 export class ChatbotService {
+  private model = 'gpt-3.5-turbo'; // Cambia el modelo según tus necesidades
+  private tokenizer = getEncoding('cl100k_base');
+  private max_tokens = 150;
   constructor(
     private prisma: PrismaService,
     @Inject('OPENAI') private readonly openai: OpenAI,
     private readonly redisService: RedisService,
   ) {}
+
+  validateTokens(text: string): boolean {
+    const tokens = this.tokenizer.encode(text);
+    return tokens.length <= this.max_tokens;
+  }
 
   async generateEmbedding(text: string): Promise<number[]> {
     try {
@@ -27,40 +36,37 @@ export class ChatbotService {
     }
   }
 
-  async findSimilarCommentsWithVector(queryEmbedding: number[], limit = 5) {
+  async findSimilarCommentsWithVector(
+    queryEmbedding: number[],
+    limit = 5,
+    facultyId: number,
+  ) {
     const embeddingString = `[${queryEmbedding.join(',')}]`;
-
-    // Usar similitud coseno con operador <=>
-    //   const result = await this.prisma.$queryRaw`
-    //   SELECT
-    //    comment,
-    //     1 - (embedding <=> ${embeddingString}::vector) as similarity
-    //   FROM "Comment"
-    //   WHERE 1 - (embedding <=> ${embeddingString}::vector) > 0.7
-    //   ORDER BY embedding <=> ${embeddingString}::vector
-    //   LIMIT ${limit}
-    // `;
     const result = await this.prisma.$queryRaw`
-SELECT 
-    c.comment,
-    c.difficulty,
-    c.quality,
-    t.name AS teacher_name,
-    t.last_name AS teacher_last_name,
-    co.name AS course_name,
-    1 - (c.embedding <=> ${embeddingString}::vector) as similarity
-FROM "Comment" c
-    JOIN "CourseTeacher" ct 
-        ON c.course_id = ct.course_id AND c.teacher_id = ct.teacher_id
-    JOIN "Teacher" t 
-        ON ct.teacher_id = t.id
-    JOIN "Course" co 
-        ON ct.course_id = co.id
-WHERE 1 - (embedding <=> ${embeddingString}::vector) > 0.5
-ORDER BY c.embedding <=> ${embeddingString}::vector
-LIMIT ${limit};
+      SELECT 
+          c.comment,
+          c.difficulty,
+          c.quality,
+          t.name AS teacher_name,
+          t.last_name AS teacher_last_name,
+          co.name AS course_name,
+          1 - (c.embedding <=> ${embeddingString}::vector) as similarity
+      FROM "Comment" c
+          JOIN "CourseTeacher" ct 
+              ON c.course_id = ct.course_id AND c.teacher_id = ct.teacher_id
+          JOIN "Teacher" t 
+              ON ct.teacher_id = t.id
+          JOIN "Course" co 
+              ON ct.course_id = co.id
+      WHERE co.faculty_id = ${facultyId}
+      -- AND (1 - (c.embedding <=> ${embeddingString}::vector)) > 0.5
+      ORDER BY c.embedding <=> ${embeddingString}::vector
+      LIMIT ${limit};
 `;
 
+    //  WHERE 1 - (embedding <=> ${embeddingString}::vector) > 0.5
+    //       WHERE co.faculty_id = ${facultyId}
+    //       AND (1 - (c.embedding <=> ${embeddingString}::vector)) > 0.5
     return result as Array<{
       comment: string;
       course_name: string;
@@ -72,110 +78,157 @@ LIMIT ${limit};
     }>;
   }
 
-  private async generateAnswer(
-    question: string,
-    relevantComments: Array<{
-      comment: string;
-      course_name: string;
-      teacher_name: string;
-      teacher_last_name: string;
-      difficulty: number;
-      quality: number;
-      similarity: number;
-    }>,
-    sessionId: string,
-  ): Promise<string> {
-    const history = await this.redisService.getChatBotHistory(sessionId);
+  async ask(query: string, sessionId: string, facultyId: number) {
+    try {
+      const facultyName = await this.prisma.faculty.findUnique({
+        where: { id: facultyId },
+      });
+      // validate that query is not too much large
+      if (!this.validateTokens(query)) {
+        throw new NotAcceptableException(
+          'Query is too long, please shorten it.',
+        );
+      }
 
-    const context = relevantComments
-      .map(
-        (result) =>
-          `Comentario: ${result.comment}, Dificultad: ${result.difficulty}, Calidad: ${result.quality}, Profesor: ${result.teacher_name} ${result.teacher_last_name}, Curso: ${result.course_name}`,
-      )
-      .join('\n');
+      const history = await this.redisService.getChatBotHistory(sessionId);
 
-    const systemPrompt = `
-    Eres un asistente llamado Recoco que ayuda a estudiantes a consultar información sobre profesores y materias basándote en comentarios de otros estudiantes.
-    - Responde de manera natural y útil
-    - Basa tu respuesta solo en la información proporcionada
-    - Si no hay información suficiente, indícalo claramente
-    - Sé objetivo y balanceado en tus respuestas
-    - Menciona nombres de profesores y materias cuando sea relevante, siempre y cuando aparezcan en los comentarios relevantes
-    - No inventes información, usa solo lo que está en los comentarios
-    - Si el usuario pregunta algo que no esté relacionado con profesores o materias, responde: "Soy Recoco, tu asistente virtual para ayudarte con dudas sobre profesores o materias. Hazme una pregunta relacionada con eso para poder ayudarte."
+      const systemPrompt = `
+           Eres Recoco y estas diseñado para ayudar a estudiantes universitarios a tomar mejores decisiones sobre qué materias cursar y con qué profesores inscribirse, basándote en opiniones reales de otros estudiantes.
+        - Saluda diciendo: Soy recoco y te ayudo a responder preguntas sobre profesores y materias de la facultad ${facultyName?.name}.
+        - Cuando hables español prioriza usar español latino/argentino.
+        - No respondas  preguntas fuera del contexto de recomendaciones de cursos y materias. 
+        - Si preguntas algo fuera del este ámbito puedes responder lugares donde pueden encontrar la información que buscan, pero no respondas directamente.
+        - Tu tono debe ser divertido cuando sea apropiado.
+        Tu función principal es ofrecer:
+        - Opiniones y recomendaciones sobre profesores o materias específicas basados en comentarios de estudiantes. 
+        - Consejos para encarar materias que son llevadas por algún profesor, basado en los comentarios de estudiantes.
+        - Si no hay información suficiente en los comentarios recopilados, indícalo claramente y sugiere al usuario a que pida ayuda a compañeros para que escriban comentarios en la plataforma.
+        - Si no hay comentarios relevantes puedes ser que sea un profesor de otra facultad o que no haya comentarios de ese profesor.
+        - No termines tu respuesta con otras preguntas. Solo responde conciso y deja el usuario haga otra pregunta si lo requiere.
+
+        Responde usando formato Markdown para que pueda mostrarse bien en una página web.
     `;
 
-    const prompt = `
-    Contexto de comentarios relevantes:
-    ${context}
+      const messages: ChatCompletionMessageParam[] = [
+        { role: 'system', content: systemPrompt },
+        ...history,
+        { role: 'user', content: query },
+      ];
 
-    Pregunta del estudiante: ${question}
+      const completion = await this.openai.chat.completions.create({
+        model: this.model,
+        messages,
+        tools: [
+          {
+            type: 'function',
+            function: getRelevantCommentsFunction,
+          },
+        ],
+        tool_choice: 'auto', // esto le dice al modelo que puede decidir si usar la función
+        max_completion_tokens: 300,
+      });
 
-    Respuesta:`;
+      const m = completion.choices[0].message;
 
-    const messages: ChatCompletionMessageParam[] = [
-      { role: 'system', content: systemPrompt },
-      ...history,
-      { role: 'user', content: prompt },
-    ];
+      if (m.tool_calls) {
+        console.log('Function call detected:', m.tool_calls);
 
-    const completion = await this.openai.chat.completions.create({
-      model: 'gpt-3.5-turbo-0125',
-      messages: messages,
-      max_tokens: 300,
-      temperature: 0.2,
-    });
+        // Modelo decidió llamar a función
 
-    // Guardar el mensaje de usuario en Redis
-    await this.redisService.addMessageToChatbotHistory(
-      sessionId,
-      'user',
-      question,
-    );
+        const functionName = m.tool_calls[0].function.name;
+        // const args = JSON.parse(m.tool_calls[0].function.arguments);
 
-    // Guardar el mensaje de respuesta en Redis
-    await this.redisService.addMessageToChatbotHistory(
-      sessionId,
-      'assistant',
-      completion.choices[0].message.content,
-    );
+        if (functionName === 'getRelevantComments') {
+          const results = await this.findRelevantComments(query, 5, facultyId);
 
-    return completion.choices[0].message.content;
+          const context = results
+            .map(
+              (result) =>
+                `Comentario: ${result.comment}, Dificultad: ${result.difficulty}, Calidad: ${result.quality}, Profesor: ${result.teacher_name} ${result.teacher_last_name}, Curso: ${result.course_name}`,
+            )
+            .join('\n');
+
+          const prompt = `
+          Contexto de comentarios relevantes:
+            ${context}
+
+          Pregunta del estudiante: ${query}
+
+          Respuesta:`;
+
+          // Mandas estos resultados al modelo para que genere respuesta final
+          const followUp = await this.openai.chat.completions.create({
+            model: this.model,
+            messages: [
+              ...messages,
+              {
+                role: 'function',
+                name: functionName,
+                content: prompt,
+              },
+            ],
+            max_completion_tokens: 300,
+          });
+
+          const answer = followUp.choices[0].message.content;
+          if (!answer) {
+            throw new Error('OpenAI returned a null response');
+          }
+
+          await this.redisService.addMessageToChatbotHistory(
+            sessionId,
+            'user',
+            query,
+          );
+          await this.redisService.addMessageToChatbotHistory(
+            sessionId,
+            'assistant',
+            answer,
+          );
+          return {
+            message: 'Respuesta generada con función',
+            data: {
+              answer,
+            },
+          };
+        }
+      } else {
+        const answer = completion.choices[0].message.content;
+        await this.redisService.addMessageToChatbotHistory(
+          sessionId,
+          'user',
+          query,
+        );
+
+        await this.redisService.addMessageToChatbotHistory(
+          sessionId,
+          'assistant',
+          answer,
+        );
+        // Respuesta normal sin función
+        return {
+          message: 'Respuesta generada sin función',
+          data: {
+            answer,
+          },
+        };
+      }
+    } catch (error) {
+      console.error('Error in ask method:', error);
+      throw error;
+    }
   }
 
-  async processQuery(queryDto: QueryChatDto) {
-    try {
-      // 1. Generar embedding de la pregunta
-      const queryEmbedding = await this.generateEmbedding(queryDto.query);
+  async findRelevantComments(query: string, limit = 5, facultyId?: number) {
+    // 1. Generar embedding de la pregunta
+    const queryEmbedding = await this.generateEmbedding(query);
+    // 2. Buscar comentarios similares usando pgvector
+    const relevantComments = await this.findSimilarCommentsWithVector(
+      queryEmbedding,
+      5,
+      facultyId,
+    );
 
-      // 2. Buscar comentarios similares usando pgvector
-      const relevantComments = await this.findSimilarCommentsWithVector(
-        queryEmbedding,
-        5,
-      );
-
-      // 3. Generar respuesta con OpenAI
-      const answer = await this.generateAnswer(
-        queryDto.query,
-        relevantComments,
-        queryDto.sessionId,
-      );
-
-      // 4. Calcular confianza promedio
-      const confidence =
-        relevantComments.length > 0
-          ? relevantComments.reduce((sum, c) => sum + c.similarity, 0) /
-            relevantComments.length
-          : 0;
-
-      return {
-        answer,
-        confidence,
-        sources: relevantComments,
-        queryId: queryDto.sessionId,
-      };
-    } catch (error) {
-      throw new Error(`Error processing query: ${error.message}`);
-    }
+    return relevantComments;
   }
 }

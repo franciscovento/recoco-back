@@ -10,9 +10,7 @@
   "[typescript]": {
     "editor.defaultFormatter": "denoland.vscode-deno"
   },
-  "deno.enablePaths": [
-    "supabase/functions"
-  ],
+  "deno.enablePaths": ["supabase/functions"],
   "deno.lint": true,
   "deno.unstable": [
     "bare-node-builtins",
@@ -41,6 +39,18 @@
     "typescript",
     "typescriptreact"
   ],
+  "eslint.enable": true,
+  "eslint.run": "onSave",
+  "eslint.lintTask.enable": false,
+  // "eslint.alwaysShowStatus": false,
+  // "problems.visibility": false,
+  // "typescript.validate.enable": false,
+  // "javascript.validate.enable": false,
+  "eslint.options": {
+    "reportUnusedDisableDirectives": "off"
+  },
+  "editor.renderWhitespace": "none",
+  "editor.renderControlCharacters": false,
   "prettier.requireConfig": true,
   "typescript.preferences.importModuleSpecifier": "relative"
 }

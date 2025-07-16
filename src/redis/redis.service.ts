@@ -36,7 +36,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   async getChatBotHistory(key: string): Promise<ChatCompletionMessageParam[]> {
-    const resp = await this.client.lRange(`chat:${key}`, 0, -1);
+    const resp = await this.client.lRange(`chat:${key}`, -6, -1);
     return resp.map((item) => JSON.parse(item));
   }
 
