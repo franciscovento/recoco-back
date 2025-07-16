@@ -39,34 +39,55 @@ export class ChatbotService {
 
   async findSimilarCommentsWithVector(
     queryEmbedding: number[],
-    limit = 5,
+    limit = 8,
     facultyId: number,
   ) {
-    const embeddingString = `[${queryEmbedding.join(',')}]`;
-    const result = await this.prisma.$queryRaw`
-      SELECT 
-          c.comment,
-          c.difficulty,
-          c.quality,
-          t.name AS teacher_name,
-          t.last_name AS teacher_last_name,
-          co.name AS course_name,
-          1 - (c.embedding <=> ${embeddingString}::vector) as similarity
-      FROM "Comment" c
-          JOIN "CourseTeacher" ct 
-              ON c.course_id = ct.course_id AND c.teacher_id = ct.teacher_id
-          JOIN "Teacher" t 
-              ON ct.teacher_id = t.id
-          JOIN "Course" co 
-              ON ct.course_id = co.id
-      WHERE co.faculty_id = ${facultyId}
-      ORDER BY c.embedding <=> ${embeddingString}::vector
-      LIMIT ${limit};
-`;
+    // const embeddingString = `[${queryEmbedding.join(',')}]`;
+    //     const result = await this.prisma.$queryRaw`
+    //       SELECT
+    //           c.comment,
+    //           c.difficulty,
+    //           c.quality,
+    //           t.name AS teacher_name,
+    //           t.last_name AS teacher_last_name,
+    //           co.name AS course_name,
+    //           1 - (c.embedding <=> ${embeddingString}::vector) as similarity
+    //       FROM "Comment" c
+    //           JOIN "CourseTeacher" ct
+    //               ON c.course_id = ct.course_id AND c.teacher_id = ct.teacher_id
+    //           JOIN "Teacher" t
+    //               ON ct.teacher_id = t.id
+    //           JOIN "Course" co
+    //               ON ct.course_id = co.id
+    //       WHERE co.faculty_id = ${facultyId}
+    //       ORDER BY c.embedding <=> ${embeddingString}::vector
+    //       LIMIT ${limit};
+    // `;
 
-    console.log(embeddingString);
+    const result = await this.prisma.$queryRawUnsafe(
+      `
+       SELECT 
+        c.id,
+        c.comment,
+        c.difficulty,
+        c.quality,
+        t.name AS teacher_name,
+        t.last_name AS teacher_last_name,
+        co.name AS course_name,
+        1 - (c.embedding <=> $1::vector) AS similarity
+      FROM "Comment" c
+      JOIN "Teacher" t ON c.teacher_id = t.id
+      JOIN "Course" co ON c.course_id = co.id
+      WHERE c.embedding IS NOT NULL AND co.faculty_id = $2
+      ORDER BY c.embedding <=> $1::vector
+      LIMIT $3
+`,
+      queryEmbedding,
+      facultyId,
+      limit,
+    );
+
     console.log(result);
-    // -- AND (1 - (c.embedding <=> ${embeddingString}::vector)) > 0.5
 
     return result as Array<{
       comment: string;
