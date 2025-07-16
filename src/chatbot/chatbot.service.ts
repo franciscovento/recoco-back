@@ -87,7 +87,7 @@ export class ChatbotService {
       limit,
     );
 
-    console.log(result);
+    // console.log(result);
 
     return result as Array<{
       comment: string;
