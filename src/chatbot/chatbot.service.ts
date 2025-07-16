@@ -8,6 +8,7 @@ import { getRelevantCommentsFunction } from './functions/getRelevantComments';
 
 @Injectable()
 export class ChatbotService {
+  // private model = 'gpt-3.5-turbo'; // Cambia el modelo según tus necesidades
   private model = 'gpt-3.5-turbo'; // Cambia el modelo según tus necesidades
   private tokenizer = getEncoding('cl100k_base');
   private max_tokens = 150;
@@ -59,14 +60,14 @@ export class ChatbotService {
           JOIN "Course" co 
               ON ct.course_id = co.id
       WHERE co.faculty_id = ${facultyId}
-      -- AND (1 - (c.embedding <=> ${embeddingString}::vector)) > 0.5
       ORDER BY c.embedding <=> ${embeddingString}::vector
       LIMIT ${limit};
 `;
 
-    //  WHERE 1 - (embedding <=> ${embeddingString}::vector) > 0.5
-    //       WHERE co.faculty_id = ${facultyId}
-    //       AND (1 - (c.embedding <=> ${embeddingString}::vector)) > 0.5
+    console.log(embeddingString);
+    console.log(result);
+    // -- AND (1 - (c.embedding <=> ${embeddingString}::vector)) > 0.5
+
     return result as Array<{
       comment: string;
       course_name: string;
