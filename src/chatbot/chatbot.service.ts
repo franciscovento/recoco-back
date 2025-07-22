@@ -211,6 +211,7 @@ export class ChatbotService {
             message: 'Respuesta generada con función',
             data: {
               answer,
+              comments: results,
             },
           };
         }
@@ -232,6 +233,7 @@ export class ChatbotService {
           message: 'Respuesta generada sin función',
           data: {
             answer,
+            comments: [],
           },
         };
       }

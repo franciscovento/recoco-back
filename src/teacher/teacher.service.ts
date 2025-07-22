@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { UserRequest } from 'src/common/interfaces/userRequest.interface';
+import { normalizeName } from '../common/utils/normalizeName';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
-import { UserRequest } from 'src/common/interfaces/userRequest.interface';
-import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class TeacherService {
@@ -10,7 +11,7 @@ export class TeacherService {
 
   async create(createTeacherDto: CreateTeacherDto, user: UserRequest) {
     try {
-      const normalizedName = createTeacherDto.name.toLowerCase().trim();
+      const normalizedName = normalizeName(createTeacherDto.name);
       const teacher = await this.prisma.teacher.create({
         data: {
           name: normalizedName,

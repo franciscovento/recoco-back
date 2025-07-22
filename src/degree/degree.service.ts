@@ -3,10 +3,10 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
+import { UserRequest } from 'src/common/interfaces/userRequest.interface';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateDegreeDto } from './dto/create-degree.dto';
 import { UpdateDegreeDto } from './dto/update-degree.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { UserRequest } from 'src/common/interfaces/userRequest.interface';
 
 @Injectable()
 export class DegreeService {
@@ -86,6 +86,9 @@ export class DegreeService {
         where: {
           status: 'active',
           faculty_id: facultyId,
+        },
+        include: {
+          faculty: true,
         },
       });
       return {

@@ -3,23 +3,12 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { CreateCourseDto } from './dto/create-course.dto';
-import { UpdateCourseDto } from './dto/update-course.dto';
 import { UserRequest } from 'src/common/interfaces/userRequest.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { normalizeName } from '../common/utils/normalizeName';
 import { CreateCourseDegree } from './dto/create-course-degree';
-
-function normalizeName(name: string): string {
-  // Quitar tildes
-  const noAccents = name.normalize('NFD').replace(/\p{Diacritic}/gu, '');
-  // Quitar espacios extra y capitalizar cada palabra
-  return noAccents
-    .trim()
-    .replace(/\s+/g, ' ')
-    .split(' ')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
-}
+import { CreateCourseDto } from './dto/create-course.dto';
+import { UpdateCourseDto } from './dto/update-course.dto';
 
 @Injectable()
 export class CourseService {
@@ -36,9 +25,10 @@ export class CourseService {
       });
 
       if (courseExist) {
-        throw new UnprocessableEntityException(
-          'This course already exist in db',
-        );
+        return {
+          message: 'This course already exists in the database',
+          data: courseExist,
+        };
       }
       const courseCreated = await this.prisma.course.create({
         data: {
