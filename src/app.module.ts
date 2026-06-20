@@ -15,8 +15,6 @@ import { TeacherModule } from './teacher/teacher.module';
 import { UniversityModule } from './university/university.module';
 import { UserModule } from './user/user.module';
 import { ChatbotModule } from './chatbot/chatbot.module';
-import { RedisModule } from './redis/redis.module';
-
 @Module({
   imports: [
     ThrottlerModule.forRoot([
@@ -43,7 +41,6 @@ import { RedisModule } from './redis/redis.module';
     AnonymsModule,
     ResourceModule,
     ChatbotModule,
-    RedisModule,
   ],
   providers: [
     {

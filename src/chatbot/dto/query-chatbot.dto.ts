@@ -1,5 +1,13 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsString, IsUUID } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+import { ChatHistoryMessageDto } from './chat-history-message.dto';
 
 export class QueryChatDto {
   @ApiProperty({
@@ -12,15 +20,6 @@ export class QueryChatDto {
   @IsString()
   query: string;
 
-  @IsUUID('4', { message: 'Session ID must be a valid UUIDv4' })
-  @ApiProperty({
-    description: 'Unique identifier for the user session',
-    example: '123e4567-e89b-12d3-a456-42661417400',
-    type: String,
-    required: true,
-  })
-  sessionId: string;
-
   @IsNumber()
   @ApiProperty({
     description: 'Faculty ID to filter the query',
@@ -29,4 +28,14 @@ export class QueryChatDto {
     required: true,
   })
   facultyId: number;
+
+  @ApiPropertyOptional({
+    description: 'Recent conversation messages for context',
+    type: [ChatHistoryMessageDto],
+  })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ChatHistoryMessageDto)
+  history?: ChatHistoryMessageDto[];
 }

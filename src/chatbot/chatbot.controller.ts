@@ -12,8 +12,8 @@ export class ChatbotController {
   async processQuery(@Body() queryDto: QueryChatDto) {
     return this.chatbotService.ask(
       queryDto.query,
-      queryDto.sessionId,
       queryDto.facultyId,
+      queryDto.history ?? [],
     );
   }
 }

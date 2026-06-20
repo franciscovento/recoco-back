@@ -3,7 +3,7 @@ import OpenAI from 'openai';
 import { ChatCompletionMessageParam } from 'openai/resources/index';
 import { getEncoding } from 'tiktoken-node';
 import { PrismaService } from '../prisma/prisma.service';
-import { RedisService } from '../redis/redis.service';
+import { ChatHistoryMessageDto } from './dto/chat-history-message.dto';
 import { getRelevantCommentsFunction } from './functions/getRelevantComments';
 
 @Injectable()
@@ -12,10 +12,10 @@ export class ChatbotService {
   private model = 'gpt-3.5-turbo'; // Cambia el modelo según tus necesidades
   private tokenizer = getEncoding('cl100k_base');
   private max_tokens = 150;
+  private maxHistoryMessages = 6;
   constructor(
     private prisma: PrismaService,
     @Inject('OPENAI') private readonly openai: OpenAI,
-    private readonly redisService: RedisService,
   ) {}
 
   validateTokens(text: string): boolean {
@@ -100,7 +100,20 @@ export class ChatbotService {
     }>;
   }
 
-  async ask(query: string, sessionId: string, facultyId: number) {
+  private buildHistoryMessages(
+    history: ChatHistoryMessageDto[] = [],
+  ): ChatCompletionMessageParam[] {
+    return history.slice(-this.maxHistoryMessages).map((message) => ({
+      role: message.role,
+      content: message.content,
+    }));
+  }
+
+  async ask(
+    query: string,
+    facultyId: number,
+    history: ChatHistoryMessageDto[] = [],
+  ) {
     try {
       const facultyName = await this.prisma.faculty.findUnique({
         where: { id: facultyId },
@@ -111,8 +124,6 @@ export class ChatbotService {
           'Query is too long, please shorten it.',
         );
       }
-
-      const history = await this.redisService.getChatBotHistory(sessionId);
 
       const systemPrompt = `
            Eres Recoco y estas diseñado para ayudar a estudiantes universitarios a tomar mejores decisiones sobre qué materias cursar y con qué profesores inscribirse, basándote en opiniones reales de otros estudiantes.
@@ -133,7 +144,7 @@ export class ChatbotService {
 
       const messages: ChatCompletionMessageParam[] = [
         { role: 'system', content: systemPrompt },
-        ...history,
+        ...this.buildHistoryMessages(history),
         { role: 'user', content: query },
       ];
 
@@ -197,16 +208,6 @@ export class ChatbotService {
             throw new Error('OpenAI returned a null response');
           }
 
-          await this.redisService.addMessageToChatbotHistory(
-            sessionId,
-            'user',
-            query,
-          );
-          await this.redisService.addMessageToChatbotHistory(
-            sessionId,
-            'assistant',
-            answer,
-          );
           return {
             message: 'Respuesta generada con función',
             data: {
@@ -217,17 +218,6 @@ export class ChatbotService {
         }
       } else {
         const answer = completion.choices[0].message.content;
-        await this.redisService.addMessageToChatbotHistory(
-          sessionId,
-          'user',
-          query,
-        );
-
-        await this.redisService.addMessageToChatbotHistory(
-          sessionId,
-          'assistant',
-          answer,
-        );
         // Respuesta normal sin función
         return {
           message: 'Respuesta generada sin función',
